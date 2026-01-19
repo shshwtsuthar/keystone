@@ -49,7 +49,6 @@ export default async function SettingsPage() {
         organizationData={organizationData}
         preferences={{
           timezone: preferences.timezone || 'America/New_York',
-          emailNotifications: preferences.emailNotifications !== false,
         }}
       />
     </div>

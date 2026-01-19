@@ -17,13 +17,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { TimezoneSelect } from '@/components/ui/timezone-select'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -34,17 +28,6 @@ const locationSchema = z.object({
 })
 
 type LocationFormValues = z.infer<typeof locationSchema>
-
-const timezones = [
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Phoenix',
-  'America/Anchorage',
-  'Pacific/Honolulu',
-  'UTC',
-]
 
 interface LocationFormProps {
   location?: {
@@ -152,20 +135,12 @@ export function LocationForm({ location, onSuccess }: LocationFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Timezone</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a timezone" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {timezones.map((tz) => (
-                    <SelectItem key={tz} value={tz}>
-                      {tz}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <TimezoneSelect
+                  value={field.value}
+                  onValueChange={field.onChange}
+                />
+              </FormControl>
               <FormDescription>
                 Timezone for this location (used for accurate time tracking)
               </FormDescription>

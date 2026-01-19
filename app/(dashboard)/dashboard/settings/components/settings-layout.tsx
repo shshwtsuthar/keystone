@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { User, Building2, Bell, Shield } from 'lucide-react'
+import { User, Building2, Bell, Shield, Mail } from 'lucide-react'
 import { ProfileSettings } from './profile-settings'
 import { OrganizationSettings } from './organization-settings'
 import { PreferencesSettings } from './preferences-settings'
 import { SecuritySettings } from './security-settings'
+import { NotificationsSettings } from './notifications-settings'
 
-type SettingsTab = 'profile' | 'organization' | 'preferences' | 'security'
+type SettingsTab = 'profile' | 'organization' | 'preferences' | 'notifications' | 'security'
 
 interface SettingsLayoutProps {
   userRole: 'owner' | 'manager'
@@ -26,7 +27,6 @@ interface SettingsLayoutProps {
   } | null
   preferences: {
     timezone: string
-    emailNotifications: boolean
   }
 }
 
@@ -60,6 +60,12 @@ export const SettingsLayout = ({
       id: 'preferences',
       label: 'Preferences',
       icon: Bell,
+      visible: true,
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      icon: Mail,
       visible: true,
     },
     {
@@ -119,14 +125,28 @@ export const SettingsLayout = ({
             <CardHeader>
               <CardTitle>Preferences</CardTitle>
               <CardDescription>
-                Customize your application preferences and notifications
+                Customize your application preferences
               </CardDescription>
             </CardHeader>
             <CardContent>
               <PreferencesSettings
                 initialTimezone={preferences.timezone}
-                initialEmailNotifications={preferences.emailNotifications}
               />
+            </CardContent>
+          </Card>
+        )
+
+      case 'notifications':
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Notifications</CardTitle>
+              <CardDescription>
+                Manage your notification preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <NotificationsSettings />
             </CardContent>
           </Card>
         )
@@ -178,7 +198,7 @@ export const SettingsLayout = ({
       </div>
 
       {/* Right Panel - Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 pl-4 pr-8">
         <div className="space-y-4">{renderContent()}</div>
       </div>
     </div>
