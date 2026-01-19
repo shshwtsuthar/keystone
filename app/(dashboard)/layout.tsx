@@ -16,10 +16,9 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
-import { signOut } from '@/app/actions/auth'
-import { LayoutDashboard, Users, MapPin, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { UserSwitcher } from '@/components/dashboard/user-switcher'
 
 export default async function DashboardLayout({
   children,
@@ -81,16 +80,12 @@ export default async function DashboardLayout({
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <form action={signOut}>
-                <SidebarMenuButton type="submit" className="w-full">
-                  <LogOut />
-                  <span>Sign Out</span>
-                </SidebarMenuButton>
-              </form>
-            </SidebarMenuItem>
-          </SidebarMenu>
+          <UserSwitcher
+            user={{
+              name: profile.full_name || user.email || 'User',
+              email: user.email,
+            }}
+          />
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>

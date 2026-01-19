@@ -1,22 +1,17 @@
 import { createClient } from '@/utils/supabase/server'
 import { getCurrentProfile } from '@/app/actions/auth'
-import { getTopEmployeesByHours } from '@/app/actions/kiosk'
 import {
   getHoursByPeriod,
   getLaborCostData,
-  getLocationStatsForCurrentMonth,
-  getPeriodComparison,
   getAdditionalMetrics,
 } from '@/app/actions/analytics'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LaborCostCard } from '@/components/dashboard/labor-cost-card'
 import { HoursChart } from '@/components/dashboard/hours-chart'
-import { LocationStatsCard } from '@/components/dashboard/location-stats-card'
-import { PeriodComparison } from '@/components/dashboard/period-comparison'
-import { AdditionalMetrics } from '@/components/dashboard/additional-metrics'
-import { format, startOfMonth, endOfMonth } from 'date-fns'
-import { Clock, Users, Trophy } from 'lucide-react'
+import { LaunchKioskCard } from '@/components/dashboard/launch-kiosk-card'
+import { PeakHoursChart } from '@/components/dashboard/peak-hours-chart'
+import { startOfMonth, endOfMonth } from 'date-fns'
+import { Clock, Users } from 'lucide-react'
 
 export default async function DashboardPage() {
   const profile = await getCurrentProfile()
@@ -51,16 +46,6 @@ export default async function DashboardPage() {
     .eq('organization_id', profile.organization_id)
     .eq('is_active', true)
 
-  // Get top 5 employees by hours worked
-  const { employees: topEmployees } = await getTopEmployeesByHours(5)
-
-  // Get locations
-  const { data: locations } = await supabase
-    .from('locations')
-    .select('id, name')
-    .eq('organization_id', profile.organization_id)
-    .order('name')
-
   // Fetch analytics data
   const [dailyHours, weeklyHours, monthlyHours] = await Promise.all([
     getHoursByPeriod('daily'),
@@ -74,9 +59,10 @@ export default async function DashboardPage() {
   // Calculate labor cost comparison
   const prevMonthStart = startOfMonth(new Date(currentMonthStart.getFullYear(), currentMonthStart.getMonth() - 1))
   const prevMonthEnd = endOfMonth(prevMonthStart)
-  const [currentLaborCost, previousLaborCost] = await Promise.all([
+  const [currentLaborCost, previousLaborCost, additionalMetrics] = await Promise.all([
     getLaborCostData(currentMonthStart, currentMonthEnd),
     getLaborCostData(prevMonthStart, prevMonthEnd),
+    getAdditionalMetrics(),
   ])
 
   const laborCostComparison = {
@@ -86,20 +72,6 @@ export default async function DashboardPage() {
     changePercent: previousLaborCost.totalLaborCost > 0
       ? ((currentLaborCost.totalLaborCost - previousLaborCost.totalLaborCost) / previousLaborCost.totalLaborCost) * 100
       : (currentLaborCost.totalLaborCost > 0 ? 100 : 0),
-  }
-
-  const [locationStats, hoursComparison, additionalMetrics] = await Promise.all([
-    getLocationStatsForCurrentMonth(undefined),
-    getPeriodComparison('monthly'),
-    getAdditionalMetrics(),
-  ])
-
-  // Helper function to format seconds to hours:minutes:seconds
-  const formatTime = (totalSeconds: number): string => {
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = totalSeconds % 60
-    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   }
 
   return (
@@ -118,6 +90,7 @@ export default async function DashboardPage() {
           changePercent={laborCostComparison.changePercent}
           period="this month"
         />
+        <LaunchKioskCard />
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -150,114 +123,15 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Hours Chart */}
-      <HoursChart
-        dailyData={dailyHours}
-        weeklyData={weeklyHours}
-        monthlyData={monthlyHours}
-      />
-
-      {/* Period Comparison */}
-      <PeriodComparison
-        hoursComparison={hoursComparison}
-        laborCostComparison={laborCostComparison}
-        period="monthly"
-      />
-
-      {/* Location Stats */}
-      {locations && locations.length > 0 && (
-        <LocationStatsCard
-          locations={locations}
-          initialStats={locationStats}
-          onLocationChange={getLocationStatsForCurrentMonth}
+      {/* Charts Section - Side by Side */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <HoursChart
+          dailyData={dailyHours}
+          weeklyData={weeklyHours}
+          monthlyData={monthlyHours}
         />
-      )}
-
-      {/* Additional Metrics */}
-      <AdditionalMetrics metrics={additionalMetrics} />
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Currently Working</CardTitle>
-          <CardDescription>
-            Employees who are currently clocked in
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {activeTimesheets && activeTimesheets.length > 0 ? (
-            <div className="space-y-4">
-              {activeTimesheets.map((timesheet: any) => (
-                <div
-                  key={timesheet.id}
-                  className="flex items-center justify-between rounded-lg border p-4"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {timesheet.employees?.full_name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {timesheet.locations?.name}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">
-                      Clocked in at{' '}
-                      {format(new Date(timesheet.clock_in), 'h:mm a')}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(timesheet.clock_in), 'MMM d, yyyy')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">
-              No employees are currently working
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
-            Top 5 Employees by Hours Worked
-          </CardTitle>
-          <CardDescription>
-            Employees with the most total hours clocked in
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {topEmployees && topEmployees.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Rank</TableHead>
-                  <TableHead>Employee Name</TableHead>
-                  <TableHead className="text-right">Total Hours</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topEmployees.map((employee, index) => (
-                  <TableRow key={employee.employee_id}>
-                    <TableCell className="font-medium">{index + 1}</TableCell>
-                    <TableCell>{employee.full_name}</TableCell>
-                    <TableCell className="text-right font-mono">
-                      {formatTime(employee.total_seconds)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">
-              No timesheet data available yet
-            </p>
-          )}
-        </CardContent>
-      </Card>
+        <PeakHoursChart peakHours={additionalMetrics.peakHours} />
+      </div>
     </div>
   )
 }
