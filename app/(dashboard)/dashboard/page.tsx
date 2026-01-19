@@ -8,7 +8,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LaborCostCard } from '@/components/dashboard/labor-cost-card'
 import { HoursChart } from '@/components/dashboard/hours-chart'
-import { LaunchKioskCard } from '@/components/dashboard/launch-kiosk-card'
+import { PayrollsGeneratedCard } from '@/components/dashboard/payrolls-generated-card'
 import { PeakHoursChart } from '@/components/dashboard/peak-hours-chart'
 import { startOfMonth, endOfMonth } from 'date-fns'
 import { Clock, Users } from 'lucide-react'
@@ -65,6 +65,14 @@ export default async function DashboardPage() {
     getAdditionalMetrics(),
   ])
 
+  // Get payrolls generated this month
+  const { count: payRunsThisMonthCount } = await supabase
+    .from('pay_runs')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', profile.organization_id)
+    .gte('created_at', currentMonthStart.toISOString())
+    .lte('created_at', currentMonthEnd.toISOString())
+
   const laborCostComparison = {
     current: currentLaborCost.totalLaborCost,
     previous: previousLaborCost.totalLaborCost,
@@ -90,7 +98,7 @@ export default async function DashboardPage() {
           changePercent={laborCostComparison.changePercent}
           period="this month"
         />
-        <LaunchKioskCard />
+        <PayrollsGeneratedCard count={payRunsThisMonthCount || 0} />
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
