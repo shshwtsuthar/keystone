@@ -1,10 +1,19 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from '@/components/ui/command'
 import { Button } from '@/components/ui/button'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
-import { verifyEmployeePin, getEmployeeStatus, performClockAction } from '@/app/actions/kiosk'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { verifyEmployeePin, getEmployeeStatus, performClockAction, verifyMasterPin } from '@/app/actions/kiosk'
 import { toast } from 'sonner'
 import { LogIn, LogOut, Coffee, CheckCircle2 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
@@ -33,12 +42,20 @@ export const KioskInterface = ({
   companyLogoUrl,
   employees,
 }: KioskInterfaceProps) => {
+  const router = useRouter()
   const [state, setState] = useState<KioskState>('idle')
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [pin, setPin] = useState('')
   const [isClockedIn, setIsClockedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showExitDialog, setShowExitDialog] = useState(false)
+  const [masterPin, setMasterPin] = useState('')
+  const [isVerifyingMasterPin, setIsVerifyingMasterPin] = useState(false)
+  
+  // Track clicks for exit kiosk
+  const clickCountRef = useRef(0)
+  const clickTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Reset to idle after success
   useEffect(() => {
@@ -127,6 +144,58 @@ export const KioskInterface = ({
     setSearchQuery('')
   }
 
+  const handleLogoClick = () => {
+    // Clear existing timer
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current)
+    }
+
+    // Increment click count
+    clickCountRef.current += 1
+
+    // If 5 clicks reached, show exit dialog
+    if (clickCountRef.current >= 5) {
+      setShowExitDialog(true)
+      clickCountRef.current = 0
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current)
+      }
+      return
+    }
+
+    // Reset click count after 2 seconds of no clicks
+    clickTimerRef.current = setTimeout(() => {
+      clickCountRef.current = 0
+    }, 2000)
+  }
+
+  const handleMasterPinComplete = async (value: string) => {
+    if (value.length !== 4) return
+
+    setIsVerifyingMasterPin(true)
+    try {
+      const result = await verifyMasterPin(value)
+      if (!result.success) {
+        toast.error(result.error || 'Invalid Master PIN')
+        setMasterPin('')
+        setIsVerifyingMasterPin(false)
+        return
+      }
+
+      toast.success('Exiting kiosk mode...')
+      router.push('/dashboard')
+    } catch (error) {
+      toast.error('An unexpected error occurred')
+      setIsVerifyingMasterPin(false)
+    }
+  }
+
+  const handleCloseExitDialog = () => {
+    setShowExitDialog(false)
+    setMasterPin('')
+    clickCountRef.current = 0
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-zinc-50 to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-800 flex items-center justify-center p-4 sm:p-6 select-none cursor-default">
       <div className="w-full max-w-2xl space-y-8">
@@ -139,6 +208,7 @@ export const KioskInterface = ({
                   src={companyLogoUrl}
                   alt={organizationName}
                   className="h-28 w-auto max-w-sm object-contain"
+                  onClick={handleLogoClick}
                 />
                 <p className="text-sm text-muted-foreground">
                   Employee Time Clock
@@ -146,7 +216,10 @@ export const KioskInterface = ({
               </div>
             ) : (
               <div className="space-y-2">
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                <h1
+                  className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight"
+                  onClick={handleLogoClick}
+                >
                   {organizationName || locationName}
                 </h1>
                 <p className="text-sm text-muted-foreground">
@@ -327,6 +400,65 @@ export const KioskInterface = ({
           </div>
         )}
       </div>
+
+      {/* Exit Kiosk Dialog */}
+      <Dialog open={showExitDialog} onOpenChange={handleCloseExitDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Exit Kiosk</DialogTitle>
+            <DialogDescription>
+              Enter Master Key to exit Kiosk mode
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <InputOTP
+                maxLength={4}
+                value={masterPin}
+                onChange={setMasterPin}
+                onComplete={handleMasterPinComplete}
+                disabled={isVerifyingMasterPin}
+                containerClassName="gap-4"
+                autoFocus
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot 
+                    index={0} 
+                    className="!h-20 !w-20 !text-3xl !font-bold !border-2"
+                  />
+                  <InputOTPSlot 
+                    index={1} 
+                    className="!h-20 !w-20 !text-3xl !font-bold !border-2"
+                  />
+                  <InputOTPSlot 
+                    index={2} 
+                    className="!h-20 !w-20 !text-3xl !font-bold !border-2"
+                  />
+                  <InputOTPSlot 
+                    index={3} 
+                    className="!h-20 !w-20 !text-3xl !font-bold !border-2"
+                  />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            {isVerifyingMasterPin && (
+              <div className="flex justify-center">
+                <Spinner className="h-5 w-5" />
+              </div>
+            )}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCloseExitDialog}
+                disabled={isVerifyingMasterPin}
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

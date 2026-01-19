@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { getCurrentProfile } from './auth'
 import { revalidatePath } from 'next/cache'
+import bcrypt from 'bcryptjs'
 
 export const updateProfile = async (fullName: string) => {
   const supabase = await createClient()
@@ -222,6 +223,57 @@ export const updatePreferences = async (preferences: {
       },
     },
   })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/dashboard/settings')
+  return { success: true }
+}
+
+export const verifyPassword = async (password: string) => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user || !user.email) {
+    return { error: 'Not authenticated' }
+  }
+
+  // Verify password by attempting to sign in
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: password,
+  })
+
+  if (signInError) {
+    return { error: 'Password is incorrect' }
+  }
+
+  return { success: true }
+}
+
+export const updateMasterPin = async (masterPin: string) => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  // Validate PIN (4 digits)
+  if (!/^\d{4}$/.test(masterPin)) {
+    return { error: 'Master PIN must be exactly 4 digits' }
+  }
+
+  // Hash the master PIN
+  const pinHash = await bcrypt.hash(masterPin, 10)
+
+  // Update profile with master PIN hash
+  const { error } = await supabase
+    .from('profiles')
+    .update({ master_pin_hash: pinHash })
+    .eq('id', user.id)
 
   if (error) {
     return { error: error.message }

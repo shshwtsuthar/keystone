@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import bcrypt from 'bcryptjs'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 
 export const verifyEmployeePin = async (employeeId: string, pin: string) => {
   const supabase = await createClient()
@@ -282,5 +283,38 @@ export const getTopEmployeesByHours = async (limit: number = 5) => {
     .slice(0, limit)
 
   return { employees: topEmployees }
+}
+
+export const verifyMasterPin = async (masterPin: string) => {
+  const supabase = await createClient()
+
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { success: false, error: 'Not authenticated' }
+  }
+
+  // Get profile with master pin hash
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('master_pin_hash')
+    .eq('id', user.id)
+    .single()
+
+  if (profileError || !profile) {
+    return { success: false, error: 'Profile not found' }
+  }
+
+  if (!profile.master_pin_hash) {
+    return { success: false, error: 'Master PIN not set' }
+  }
+
+  // Verify master PIN
+  const match = await bcrypt.compare(masterPin, profile.master_pin_hash)
+  if (!match) {
+    return { success: false, error: 'Invalid Master PIN' }
+  }
+
+  return { success: true }
 }
 
