@@ -1,0 +1,128 @@
+'use client'
+
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart'
+import { Area, AreaChart, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { formatHours } from '@/lib/analytics-utils'
+import { format, parseISO } from 'date-fns'
+import type { HoursByPeriodData } from '@/app/actions/analytics'
+
+interface HoursChartProps {
+  dailyData: HoursByPeriodData[]
+  weeklyData: HoursByPeriodData[]
+  monthlyData: HoursByPeriodData[]
+}
+
+const chartConfig = {
+  hours: {
+    label: 'Hours',
+    color: 'hsl(var(--chart-1))',
+  },
+} satisfies ChartConfig
+
+const formatDateLabel = (date: string, period: 'daily' | 'weekly' | 'monthly'): string => {
+  try {
+    if (period === 'monthly') {
+      return format(parseISO(date + '-01'), 'MMM yyyy')
+    }
+    const parsed = parseISO(date)
+    if (period === 'daily') {
+      return format(parsed, 'MMM d')
+    }
+    return format(parsed, 'MMM d')
+  } catch {
+    return date
+  }
+}
+
+export const HoursChart = ({ dailyData, weeklyData, monthlyData }: HoursChartProps) => {
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily')
+
+  const getData = () => {
+    switch (activeTab) {
+      case 'daily':
+        return dailyData
+      case 'weekly':
+        return weeklyData
+      case 'monthly':
+        return monthlyData
+    }
+  }
+
+  const data = getData()
+  const hasData = data && data.length > 0 && data.some(d => d.hours > 0)
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Hours Worked</CardTitle>
+        <CardDescription>Track hours worked over time</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+          <TabsList className="mb-4">
+            <TabsTrigger value="daily">Daily</TabsTrigger>
+            <TabsTrigger value="weekly">Weekly</TabsTrigger>
+            <TabsTrigger value="monthly">Monthly</TabsTrigger>
+          </TabsList>
+          <TabsContent value={activeTab} className="mt-0">
+            {hasData ? (
+              <ChartContainer config={chartConfig}>
+                <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <defs>
+                    <linearGradient id="fillHours" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-hours)" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="var(--color-hours)" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(value) => formatDateLabel(value, activeTab)}
+                    className="text-xs"
+                  />
+                  <YAxis
+                    tickFormatter={(value) => formatHours(value)}
+                    className="text-xs"
+                  />
+                  <ChartTooltip
+                    content={
+                      <ChartTooltipContent
+                        formatter={(value) => [
+                          formatHours(Number(value)),
+                          'Hours',
+                        ]}
+                        labelFormatter={(value) => {
+                          return formatDateLabel(value, activeTab)
+                        }}
+                      />
+                    }
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="hours"
+                    stroke="var(--color-hours)"
+                    fill="url(#fillHours)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                <p>No data available for this period</p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  )
+}
+

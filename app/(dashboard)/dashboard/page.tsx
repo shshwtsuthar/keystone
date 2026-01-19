@@ -1,9 +1,21 @@
 import { createClient } from '@/utils/supabase/server'
 import { getCurrentProfile } from '@/app/actions/auth'
 import { getTopEmployeesByHours } from '@/app/actions/kiosk'
+import {
+  getHoursByPeriod,
+  getLaborCostData,
+  getLocationStatsForCurrentMonth,
+  getPeriodComparison,
+  getAdditionalMetrics,
+} from '@/app/actions/analytics'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { format } from 'date-fns'
+import { LaborCostCard } from '@/components/dashboard/labor-cost-card'
+import { HoursChart } from '@/components/dashboard/hours-chart'
+import { LocationStatsCard } from '@/components/dashboard/location-stats-card'
+import { PeriodComparison } from '@/components/dashboard/period-comparison'
+import { AdditionalMetrics } from '@/components/dashboard/additional-metrics'
+import { format, startOfMonth, endOfMonth } from 'date-fns'
 import { Clock, Users, Trophy } from 'lucide-react'
 
 export default async function DashboardPage() {
@@ -42,6 +54,46 @@ export default async function DashboardPage() {
   // Get top 5 employees by hours worked
   const { employees: topEmployees } = await getTopEmployeesByHours(5)
 
+  // Get locations
+  const { data: locations } = await supabase
+    .from('locations')
+    .select('id, name')
+    .eq('organization_id', profile.organization_id)
+    .order('name')
+
+  // Fetch analytics data
+  const [dailyHours, weeklyHours, monthlyHours] = await Promise.all([
+    getHoursByPeriod('daily'),
+    getHoursByPeriod('weekly'),
+    getHoursByPeriod('monthly'),
+  ])
+
+  const currentMonthStart = startOfMonth(new Date())
+  const currentMonthEnd = endOfMonth(new Date())
+
+  // Calculate labor cost comparison
+  const prevMonthStart = startOfMonth(new Date(currentMonthStart.getFullYear(), currentMonthStart.getMonth() - 1))
+  const prevMonthEnd = endOfMonth(prevMonthStart)
+  const [currentLaborCost, previousLaborCost] = await Promise.all([
+    getLaborCostData(currentMonthStart, currentMonthEnd),
+    getLaborCostData(prevMonthStart, prevMonthEnd),
+  ])
+
+  const laborCostComparison = {
+    current: currentLaborCost.totalLaborCost,
+    previous: previousLaborCost.totalLaborCost,
+    change: currentLaborCost.totalLaborCost - previousLaborCost.totalLaborCost,
+    changePercent: previousLaborCost.totalLaborCost > 0
+      ? ((currentLaborCost.totalLaborCost - previousLaborCost.totalLaborCost) / previousLaborCost.totalLaborCost) * 100
+      : (currentLaborCost.totalLaborCost > 0 ? 100 : 0),
+  }
+
+  const [locationStats, hoursComparison, additionalMetrics] = await Promise.all([
+    getLocationStatsForCurrentMonth(undefined),
+    getPeriodComparison('monthly'),
+    getAdditionalMetrics(),
+  ])
+
   // Helper function to format seconds to hours:minutes:seconds
   const formatTime = (totalSeconds: number): string => {
     const hours = Math.floor(totalSeconds / 3600)
@@ -59,7 +111,13 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {/* Key Metrics - Top Section */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <LaborCostCard
+          totalLaborCost={currentLaborCost.totalLaborCost}
+          changePercent={laborCostComparison.changePercent}
+          period="this month"
+        />
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -76,7 +134,6 @@ export default async function DashboardPage() {
             </p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -92,6 +149,32 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Hours Chart */}
+      <HoursChart
+        dailyData={dailyHours}
+        weeklyData={weeklyHours}
+        monthlyData={monthlyHours}
+      />
+
+      {/* Period Comparison */}
+      <PeriodComparison
+        hoursComparison={hoursComparison}
+        laborCostComparison={laborCostComparison}
+        period="monthly"
+      />
+
+      {/* Location Stats */}
+      {locations && locations.length > 0 && (
+        <LocationStatsCard
+          locations={locations}
+          initialStats={locationStats}
+          onLocationChange={getLocationStatsForCurrentMonth}
+        />
+      )}
+
+      {/* Additional Metrics */}
+      <AdditionalMetrics metrics={additionalMetrics} />
 
       <Card>
         <CardHeader>
