@@ -14,6 +14,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
+  SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { LayoutDashboard, Users, MapPin, DollarSign } from 'lucide-react'
@@ -32,17 +33,32 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  const organizationName = 
+    (profile.organizations as { name?: string })?.name || 'Company Name'
+  const companyLogoUrl = 
+    (profile.organizations as { company_logo_url?: string | null })?.company_logo_url || null
+
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader>
-          <div className="flex items-center gap-2 px-2 py-4">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <LayoutDashboard className="h-4 w-4" />
-            </div>
+        <SidebarHeader className="h-16 flex flex-row items-center justify-start relative border-b">
+          <div className="flex items-center gap-2 px-2">
+            {companyLogoUrl ? (
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden bg-background">
+                <img
+                  src={companyLogoUrl}
+                  alt={organizationName}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <LayoutDashboard className="h-4 w-4" />
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="text-sm font-semibold">Keystone</span>
-              <span className="text-xs text-muted-foreground">Time Tracking</span>
+              <span className="text-sm font-semibold">{organizationName}</span>
+              <span className="text-xs text-muted-foreground">Keystone</span>
             </div>
           </div>
         </SidebarHeader>
