@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 
 const passwordSchema = z
@@ -71,70 +72,77 @@ export const SecuritySettings = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="currentPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Current Password</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Enter your current password"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Enter your current password to verify your identity
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="newPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>New Password</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Enter your new password"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Must be at least 8 characters with uppercase, lowercase, and a number
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm New Password</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  placeholder="Confirm your new password"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Re-enter your new password to confirm
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Updating...' : 'Update Password'}
-        </Button>
+      <form onSubmit={form.handleSubmit(handleSubmit)}>
+        <Card>
+          <CardHeader>
+            <CardTitle>Update Password</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <FormField
+              control={form.control}
+              name="currentPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Enter your current password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Enter your current password to verify your identity
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Enter your new password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Must be at least 8 characters with uppercase, lowercase, and a number
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm New Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Confirm your new password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Re-enter your new password to confirm
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Updating...' : 'Update Password'}
+            </Button>
+          </CardContent>
+        </Card>
       </form>
     </Form>
   )
