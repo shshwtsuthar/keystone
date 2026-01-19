@@ -56,12 +56,8 @@ export default async function DashboardPage() {
   const currentMonthStart = startOfMonth(new Date())
   const currentMonthEnd = endOfMonth(new Date())
 
-  // Calculate labor cost comparison
-  const prevMonthStart = startOfMonth(new Date(currentMonthStart.getFullYear(), currentMonthStart.getMonth() - 1))
-  const prevMonthEnd = endOfMonth(prevMonthStart)
-  const [currentLaborCost, previousLaborCost, additionalMetrics] = await Promise.all([
+  const [currentLaborCost, additionalMetrics] = await Promise.all([
     getLaborCostData(currentMonthStart, currentMonthEnd),
-    getLaborCostData(prevMonthStart, prevMonthEnd),
     getAdditionalMetrics(),
   ])
 
@@ -72,15 +68,6 @@ export default async function DashboardPage() {
     .eq('organization_id', profile.organization_id)
     .gte('created_at', currentMonthStart.toISOString())
     .lte('created_at', currentMonthEnd.toISOString())
-
-  const laborCostComparison = {
-    current: currentLaborCost.totalLaborCost,
-    previous: previousLaborCost.totalLaborCost,
-    change: currentLaborCost.totalLaborCost - previousLaborCost.totalLaborCost,
-    changePercent: previousLaborCost.totalLaborCost > 0
-      ? ((currentLaborCost.totalLaborCost - previousLaborCost.totalLaborCost) / previousLaborCost.totalLaborCost) * 100
-      : (currentLaborCost.totalLaborCost > 0 ? 100 : 0),
-  }
 
   return (
     <div className="flex flex-col h-full gap-6">
@@ -95,8 +82,6 @@ export default async function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <LaborCostCard
           totalLaborCost={currentLaborCost.totalLaborCost}
-          changePercent={laborCostComparison.changePercent}
-          period="this month"
         />
         <PayrollsGeneratedCard count={payRunsThisMonthCount || 0} />
         <Card>
@@ -107,7 +92,7 @@ export default async function DashboardPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold">
               {activeTimesheets?.length || 0}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -123,7 +108,7 @@ export default async function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalEmployees || 0}</div>
+            <div className="text-3xl font-bold">{totalEmployees || 0}</div>
             <p className="text-xs text-muted-foreground">
               Active employees in your organization
             </p>
