@@ -2,7 +2,9 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { format } from 'date-fns'
 import type { EmployeeTimesheet } from '@/lib/payroll-utils'
+import type { PayslipData } from '@/types/payslip'
 
 export interface EmployeeEarnings {
   employeeId: string
@@ -271,6 +273,128 @@ export const createPayRun = async (payRunData: PayRunData) => {
 
     revalidatePath('/dashboard/payroll')
     return { success: true, payRunId: payRun.id }
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
+export const getPayslipData = async (
+  payRunId: string,
+  employeeId: string
+): Promise<{ error?: string; data?: PayslipData }> => {
+  const supabase = await createClient()
+
+  try {
+    const organizationId = await getOrganizationId()
+
+    // Fetch organization details
+    const { data: organization, error: orgError } = await supabase
+      .from('organizations')
+      .select('name, employer_business_name, abn, company_logo_url')
+      .eq('id', organizationId)
+      .single()
+
+    if (orgError) {
+      return { error: orgError.message }
+    }
+
+    // Fetch employee details
+    const { data: employee, error: empError } = await supabase
+      .from('employees')
+      .select('full_name, classification, super_fund_name')
+      .eq('id', employeeId)
+      .eq('organization_id', organizationId)
+      .single()
+
+    if (empError) {
+      return { error: empError.message }
+    }
+
+    // Fetch pay run details
+    const { data: payRun, error: payRunError } = await supabase
+      .from('pay_runs')
+      .select('pay_period_start, pay_period_end, payment_date')
+      .eq('id', payRunId)
+      .eq('organization_id', organizationId)
+      .single()
+
+    if (payRunError) {
+      return { error: payRunError.message }
+    }
+
+    // Fetch earnings for this employee in this pay run
+    const { data: earnings, error: earningsError } = await supabase
+      .from('pay_run_earnings')
+      .select('description, rate, hours, total')
+      .eq('pay_run_id', payRunId)
+      .eq('employee_id', employeeId)
+
+    if (earningsError) {
+      return { error: earningsError.message }
+    }
+
+    // Fetch deductions for this employee in this pay run
+    const { data: deduction, error: deductionError } = await supabase
+      .from('pay_run_deductions')
+      .select('tax_withheld, superannuation, gross_pay, net_pay')
+      .eq('pay_run_id', payRunId)
+      .eq('employee_id', employeeId)
+      .single()
+
+    if (deductionError) {
+      return { error: deductionError.message }
+    }
+
+    // Format dates
+    const payPeriodStart = format(new Date(payRun.pay_period_start), 'dd MMM yyyy')
+    const payPeriodEnd = format(new Date(payRun.pay_period_end), 'dd MMM yyyy')
+    const paymentDate = format(new Date(payRun.payment_date), 'dd MMM yyyy')
+
+    // Format ABN (XX XXX XXX XXX)
+    const formatABN = (abn: string | null): string => {
+      if (!abn) return 'Not provided'
+      const digits = abn.replace(/\s+/g, '')
+      if (digits.length !== 11) return abn
+      return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8, 11)}`
+    }
+
+    // Transform earnings to array format
+    const earningsArray = (earnings || []).map((e) => ({
+      description: e.description || 'Regular hours',
+      rate: Number(e.rate) || 0,
+      hours: Number(e.hours) || 0,
+      total: Number(e.total) || 0,
+    }))
+
+    // Ensure at least one earnings entry exists (even if empty)
+    const finalEarnings = earningsArray.length > 0 
+      ? earningsArray 
+      : [{ description: 'Regular hours', rate: 0, hours: 0, total: 0 }]
+
+    // Calculate gross pay from earnings if not available in deduction
+    const grossPay = finalEarnings.reduce((sum, e) => sum + e.total, 0) || Number(deduction.gross_pay) || 0
+
+    // Build PayslipData with proper defaults for all fields
+    const payslipData: PayslipData = {
+      employerName: organization.employer_business_name || organization.name || 'Employer Name Not Set',
+      employerABN: formatABN(organization.abn),
+      companyLogoUrl: organization.company_logo_url || null,
+      employeeName: employee.full_name || 'Employee Name Not Set',
+      classification: employee.classification || 'N/A',
+      payPeriodStart,
+      payPeriodEnd,
+      paymentDate,
+      earnings: finalEarnings,
+      taxWithheld: Number(deduction.tax_withheld) || 0,
+      superannuation: {
+        fundName: employee.super_fund_name || 'Not specified',
+        amount: Number(deduction.superannuation) || 0,
+      },
+      grossPay: grossPay || 0,
+      netPay: Number(deduction.net_pay) || 0,
+    }
+
+    return { data: payslipData }
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'Unknown error' }
   }

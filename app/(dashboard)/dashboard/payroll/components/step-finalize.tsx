@@ -5,7 +5,12 @@ import { format } from 'date-fns'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { createPayRun, type EmployeeEarnings, type EmployeeDeductions } from '@/app/actions/payroll'
+import {
+  createPayRun,
+  getPayslipData,
+  type EmployeeEarnings,
+  type EmployeeDeductions,
+} from '@/app/actions/payroll'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -51,11 +56,71 @@ export const StepFinalize = ({
         return
       }
 
-      toast.success('Pay run created successfully!')
+      if (!result.payRunId) {
+        toast.error('Pay run created but no ID returned')
+        return
+      }
+
+      toast.success('Pay run created successfully! Generating payslips...')
+
+      // Generate PDFs for all employees
+      const employeeIds = Array.from(reviewedEmployees.keys())
+      let successCount = 0
+      let errorCount = 0
+
+      for (const employeeId of employeeIds) {
+        try {
+          // Fetch payslip data
+          const payslipResult = await getPayslipData(result.payRunId, employeeId)
+
+          if (payslipResult.error || !payslipResult.data) {
+            console.error(`Failed to get payslip data for employee ${employeeId}:`, payslipResult.error)
+            errorCount++
+            continue
+          }
+
+          // Generate PDF via API
+          const response = await fetch('/api/generate-payslip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: payslipResult.data }),
+          })
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`)
+          }
+
+          // Download PDF
+          const blob = await response.blob()
+          const url = window.URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.download = `payslip-${payslipResult.data.employeeName.replace(/\s+/g, '-')}.pdf`
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          window.URL.revokeObjectURL(url)
+
+          successCount++
+        } catch (error) {
+          console.error(`Failed to generate PDF for employee ${employeeId}:`, error)
+          errorCount++
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(
+          `Pay run created! ${successCount} payslip${successCount > 1 ? 's' : ''} generated${errorCount > 0 ? ` (${errorCount} failed)` : ''}`
+        )
+      } else {
+        toast.error('Pay run created but failed to generate payslips')
+      }
+
       onComplete()
       router.refresh()
     } catch (error) {
       toast.error('Failed to create pay run')
+      console.error(error)
     } finally {
       setIsSubmitting(false)
     }
