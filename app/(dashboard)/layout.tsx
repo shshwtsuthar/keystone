@@ -1,0 +1,111 @@
+import { redirect } from 'next/navigation'
+import { getCurrentUser, getCurrentProfile } from '@/app/actions/auth'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
+import { Button } from '@/components/ui/button'
+import { signOut } from '@/app/actions/auth'
+import { LayoutDashboard, Users, MapPin, LogOut } from 'lucide-react'
+import Link from 'next/link'
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const user = await getCurrentUser()
+  const profile = await getCurrentProfile()
+
+  if (!user || !profile) {
+    redirect('/login')
+  }
+
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader>
+          <div className="flex items-center gap-2 px-2 py-4">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <LayoutDashboard className="h-4 w-4" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold">Keystone</span>
+              <span className="text-xs text-muted-foreground">Time Tracking</span>
+            </div>
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/dashboard">
+                      <LayoutDashboard />
+                      <span>Dashboard</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/dashboard/locations">
+                      <MapPin />
+                      <span>Locations</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/dashboard/employees">
+                      <Users />
+                      <span>Employees</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <form action={signOut}>
+                <SidebarMenuButton type="submit" className="w-full">
+                  <LogOut />
+                  <span>Sign Out</span>
+                </SidebarMenuButton>
+              </form>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger />
+          <div className="flex-1" />
+          <div className="text-sm text-muted-foreground">
+            {profile.full_name || profile.id}
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+          {children}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
