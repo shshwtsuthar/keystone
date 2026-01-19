@@ -82,7 +82,11 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
           values.fullName,
           values.payRate ? parseFloat(values.payRate) : null,
           values.defaultLocationId || null,
-          employee.is_active
+          employee.is_active,
+          null,
+          null,
+          null,
+          null
         )
         if (result.error) {
           toast.error(result.error)
@@ -95,7 +99,11 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
         const result = await createEmployee(
           values.fullName,
           values.payRate ? parseFloat(values.payRate) : null,
-          values.defaultLocationId || null
+          values.defaultLocationId || null,
+          null,
+          null,
+          null,
+          null
         )
         if (result.error) {
           toast.error(result.error)

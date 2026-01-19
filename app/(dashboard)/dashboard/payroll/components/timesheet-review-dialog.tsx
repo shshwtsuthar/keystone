@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
+import { ColumnDef } from '@tanstack/react-table'
 import {
   Dialog,
   DialogContent,
@@ -12,8 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DataTable } from '@/components/ui/data-table'
 import { Spinner } from '@/components/ui/spinner'
 import { getEmployeeTimesheets, updateTimesheet, type TimesheetWithId } from '@/app/actions/payroll'
 import { calculateEmployeeHours } from '@/lib/payroll-utils'
@@ -142,6 +142,73 @@ export const TimesheetReviewDialog = ({
     }
   }
 
+  const columns: ColumnDef<EditableTimesheet>[] = [
+    {
+      id: 'clockIn',
+      header: 'Clock In',
+      cell: ({ row }) => {
+        const index = timesheets.findIndex((ts) => ts.id === row.original.id)
+        return (
+          <div className="flex gap-2">
+            <Input
+              type="date"
+              value={row.original.clockInDate}
+              onChange={(e) => handleTimesheetChange(index, 'clockInDate', e.target.value)}
+              className="w-32"
+            />
+            <Input
+              type="time"
+              value={row.original.clockInTime}
+              onChange={(e) => handleTimesheetChange(index, 'clockInTime', e.target.value)}
+              className="w-24"
+            />
+          </div>
+        )
+      },
+      enableSorting: false,
+    },
+    {
+      id: 'clockOut',
+      header: 'Clock Out',
+      cell: ({ row }) => {
+        const index = timesheets.findIndex((ts) => ts.id === row.original.id)
+        return (
+          <div className="flex gap-2">
+            <Input
+              type="date"
+              value={row.original.clockOutDate}
+              onChange={(e) => handleTimesheetChange(index, 'clockOutDate', e.target.value)}
+              className="w-32"
+            />
+            <Input
+              type="time"
+              value={row.original.clockOutTime}
+              onChange={(e) => handleTimesheetChange(index, 'clockOutTime', e.target.value)}
+              className="w-24"
+            />
+          </div>
+        )
+      },
+      enableSorting: false,
+    },
+    {
+      id: 'hours',
+      header: () => <div className="text-right">Hours</div>,
+      cell: ({ row }) => {
+        const clockIn = new Date(`${row.original.clockInDate}T${row.original.clockInTime}`)
+        const clockOut = row.original.clockOutTime
+          ? new Date(`${row.original.clockOutDate}T${row.original.clockOutTime}`)
+          : null
+        const hours = clockOut
+          ? Math.round(((clockOut.getTime() - clockIn.getTime()) / 1000 / 3600) * 100) / 100
+          : 0
+
+        return <div className="text-right font-medium">{hours.toFixed(2)}</div>
+      },
+      enableSorting: false,
+    },
+  ]
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -162,64 +229,13 @@ export const TimesheetReviewDialog = ({
           </div>
         ) : (
           <div className="space-y-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Clock In</TableHead>
-                  <TableHead>Clock Out</TableHead>
-                  <TableHead className="text-right">Hours</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {timesheets.map((ts, index) => {
-                  const clockIn = new Date(`${ts.clockInDate}T${ts.clockInTime}`)
-                  const clockOut = ts.clockOutTime
-                    ? new Date(`${ts.clockOutDate}T${ts.clockOutTime}`)
-                    : null
-                  const hours = clockOut
-                    ? Math.round(((clockOut.getTime() - clockIn.getTime()) / 1000 / 3600) * 100) / 100
-                    : 0
-
-                  return (
-                    <TableRow key={ts.id}>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Input
-                            type="date"
-                            value={ts.clockInDate}
-                            onChange={(e) => handleTimesheetChange(index, 'clockInDate', e.target.value)}
-                            className="w-32"
-                          />
-                          <Input
-                            type="time"
-                            value={ts.clockInTime}
-                            onChange={(e) => handleTimesheetChange(index, 'clockInTime', e.target.value)}
-                            className="w-24"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Input
-                            type="date"
-                            value={ts.clockOutDate}
-                            onChange={(e) => handleTimesheetChange(index, 'clockOutDate', e.target.value)}
-                            className="w-32"
-                          />
-                          <Input
-                            type="time"
-                            value={ts.clockOutTime}
-                            onChange={(e) => handleTimesheetChange(index, 'clockOutTime', e.target.value)}
-                            className="w-24"
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">{hours.toFixed(2)}</TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
+            <DataTable
+              columns={columns}
+              data={timesheets}
+              enableSearch={false}
+              enablePagination={false}
+              enableColumnVisibility={false}
+            />
 
             <div className="flex justify-between items-center pt-4 border-t">
               <div>
@@ -275,4 +291,3 @@ export const TimesheetReviewDialog = ({
     </Dialog>
   )
 }
-

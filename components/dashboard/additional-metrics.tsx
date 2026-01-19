@@ -10,10 +10,10 @@ import {
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { Clock, Users, AlertTriangle } from 'lucide-react'
 import { formatHours, formatPercent } from '@/lib/analytics-utils'
-import type { AdditionalMetrics } from '@/app/actions/analytics'
+import type { AdditionalMetrics as AdditionalMetricsData } from '@/app/actions/analytics'
 
 interface AdditionalMetricsProps {
-  metrics: AdditionalMetrics
+  metrics: AdditionalMetricsData
 }
 
 const peakHoursConfig = {

@@ -4,11 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import { formatHours, formatPercent, formatCurrency } from '@/lib/analytics-utils'
 import { cn } from '@/lib/utils'
-import type { PeriodComparison } from '@/app/actions/analytics'
+import type { PeriodComparison as PeriodComparisonData } from '@/app/actions/analytics'
 
 interface PeriodComparisonProps {
-  hoursComparison: PeriodComparison
-  laborCostComparison?: PeriodComparison
+  hoursComparison: PeriodComparisonData
+  laborCostComparison?: PeriodComparisonData
   period: 'daily' | 'weekly' | 'monthly'
 }
 

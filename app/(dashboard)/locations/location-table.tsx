@@ -1,14 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { ColumnDef } from '@tanstack/react-table'
+import { DataTable } from '@/components/ui/data-table'
+import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -62,6 +57,105 @@ export function LocationTable({ locations }: LocationTableProps) {
     }
   }
 
+  const columns: ColumnDef<Location>[] = [
+    {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Name" />
+      ),
+      cell: ({ row }) => (
+        <div className="font-medium">{row.original.name}</div>
+      ),
+    },
+    {
+      accessorKey: 'address',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Address" />
+      ),
+      cell: ({ row }) => {
+        return row.original.address || '-'
+      },
+    },
+    {
+      accessorKey: 'timezone',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Timezone" />
+      ),
+      cell: ({ row }) => {
+        return row.original.timezone
+      },
+    },
+    {
+      id: 'actions',
+      cell: ({ row }) => {
+        const location = row.original
+
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <Link href={`/kiosk/${location.id}`}>
+              <Button variant="outline" size="sm">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Launch Kiosk
+              </Button>
+            </Link>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingLocation(location)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Location</DialogTitle>
+                  <DialogDescription>
+                    Update location details
+                  </DialogDescription>
+                </DialogHeader>
+                <LocationForm
+                  location={editingLocation || undefined}
+                  onSuccess={() => {
+                    setEditingLocation(null)
+                    router.refresh()
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete this location. This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleDelete(location.id)}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        )
+      },
+      enableSorting: false,
+      enableHiding: false,
+    },
+  ]
+
   if (locations.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -71,87 +165,14 @@ export function LocationTable({ locations }: LocationTableProps) {
   }
 
   return (
-    <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead>Timezone</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {locations.map((location) => (
-            <TableRow key={location.id}>
-              <TableCell className="font-medium">{location.name}</TableCell>
-              <TableCell>{location.address || '-'}</TableCell>
-              <TableCell>{location.timezone}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
-                  <Link href={`/kiosk/${location.id}`}>
-                    <Button variant="outline" size="sm">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Launch Kiosk
-                    </Button>
-                  </Link>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingLocation(location)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit Location</DialogTitle>
-                        <DialogDescription>
-                          Update location details
-                        </DialogDescription>
-                      </DialogHeader>
-                      <LocationForm
-                        location={editingLocation || undefined}
-                        onSuccess={() => {
-                          setEditingLocation(null)
-                          router.refresh()
-                        }}
-                      />
-                    </DialogContent>
-                  </Dialog>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will permanently delete this location. This action
-                          cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(location.id)}
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </>
+    <DataTable
+      columns={columns}
+      data={locations}
+      searchKey="name"
+      searchPlaceholder="Search locations..."
+      enableSearch={true}
+      enablePagination={true}
+      enableColumnVisibility={true}
+    />
   )
 }
-

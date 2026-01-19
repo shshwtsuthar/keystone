@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { signIn } from '@/app/actions/auth'
 import { LoginForm } from '@/components/login-form'
 import { FloatingPaths } from '@/components/kokonutui/background-paths'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(searchParams.get('message') || null)
@@ -68,5 +68,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-svh items-center justify-center">
+          <span className="text-sm text-muted-foreground">Loading...</span>
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
   )
 }
