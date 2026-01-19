@@ -1,8 +1,10 @@
 import { createClient } from '@/utils/supabase/server'
 import { getCurrentProfile } from '@/app/actions/auth'
+import { getTopEmployeesByHours } from '@/app/actions/kiosk'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { format } from 'date-fns'
-import { Clock, Users } from 'lucide-react'
+import { Clock, Users, Trophy } from 'lucide-react'
 
 export default async function DashboardPage() {
   const profile = await getCurrentProfile()
@@ -36,6 +38,17 @@ export default async function DashboardPage() {
     .select('*', { count: 'exact', head: true })
     .eq('organization_id', profile.organization_id)
     .eq('is_active', true)
+
+  // Get top 5 employees by hours worked
+  const { employees: topEmployees } = await getTopEmployeesByHours(5)
+
+  // Helper function to format seconds to hours:minutes:seconds
+  const formatTime = (totalSeconds: number): string => {
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
 
   return (
     <div className="space-y-6">
@@ -118,6 +131,46 @@ export default async function DashboardPage() {
           ) : (
             <p className="text-center text-muted-foreground py-8">
               No employees are currently working
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5" />
+            Top 5 Employees by Hours Worked
+          </CardTitle>
+          <CardDescription>
+            Employees with the most total hours clocked in
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {topEmployees && topEmployees.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Rank</TableHead>
+                  <TableHead>Employee Name</TableHead>
+                  <TableHead className="text-right">Total Hours</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topEmployees.map((employee, index) => (
+                  <TableRow key={employee.employee_id}>
+                    <TableCell className="font-medium">{index + 1}</TableCell>
+                    <TableCell>{employee.full_name}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      {formatTime(employee.total_seconds)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">
+              No timesheet data available yet
             </p>
           )}
         </CardContent>

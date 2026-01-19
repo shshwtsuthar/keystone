@@ -203,3 +203,84 @@ export const performClockAction = async (
   return { success: true }
 }
 
+export interface TopEmployeeHours {
+  employee_id: string
+  full_name: string
+  total_seconds: number
+}
+
+export const getTopEmployeesByHours = async (limit: number = 5) => {
+  const supabase = await createClient()
+
+  // Get current user's organization
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Not authenticated', employees: [] }
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('organization_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile) {
+    return { error: 'Profile not found', employees: [] }
+  }
+
+  // Get all completed timesheets (where clock_out is not null)
+  const { data: timesheets, error } = await supabase
+    .from('timesheets')
+    .select(`
+      employee_id,
+      clock_in,
+      clock_out,
+      employees (
+        full_name
+      )
+    `)
+    .eq('organization_id', profile.organization_id)
+    .not('clock_out', 'is', null)
+    .order('clock_in', { ascending: false })
+
+  if (error) {
+    return { error: error.message, employees: [] }
+  }
+
+  if (!timesheets || timesheets.length === 0) {
+    return { employees: [] }
+  }
+
+  // Calculate total hours for each employee
+  const employeeHoursMap = new Map<string, { full_name: string; total_seconds: number }>()
+
+  for (const timesheet of timesheets) {
+    const employeeId = timesheet.employee_id
+    const clockIn = new Date(timesheet.clock_in)
+    const clockOut = new Date(timesheet.clock_out!)
+    const durationSeconds = Math.floor((clockOut.getTime() - clockIn.getTime()) / 1000)
+
+    if (employeeHoursMap.has(employeeId)) {
+      const existing = employeeHoursMap.get(employeeId)!
+      existing.total_seconds += durationSeconds
+    } else {
+      employeeHoursMap.set(employeeId, {
+        full_name: (timesheet.employees as any).full_name,
+        total_seconds: durationSeconds,
+      })
+    }
+  }
+
+  // Convert to array, sort by total_seconds descending, and take top N
+  const topEmployees: TopEmployeeHours[] = Array.from(employeeHoursMap.entries())
+    .map(([employee_id, data]) => ({
+      employee_id,
+      full_name: data.full_name,
+      total_seconds: data.total_seconds,
+    }))
+    .sort((a, b) => b.total_seconds - a.total_seconds)
+    .slice(0, limit)
+
+  return { employees: topEmployees }
+}
+
