@@ -16,7 +16,7 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { LayoutDashboard, Users, MapPin } from 'lucide-react'
+import { LayoutDashboard, Users, MapPin, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 import { UserSwitcher } from '@/components/dashboard/user-switcher'
 
@@ -72,6 +72,14 @@ export default async function DashboardLayout({
                     <Link href="/dashboard/employees">
                       <Users />
                       <span>Employees</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <Link href="/dashboard/payroll">
+                      <DollarSign />
+                      <span>Payroll</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
