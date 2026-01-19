@@ -80,6 +80,15 @@ export default async function SettingsPage() {
                   initialName={
                     (profile.organizations as { name: string })?.name || ''
                   }
+                  initialCompanyLogoUrl={
+                    (profile.organizations as { company_logo_url?: string | null })?.company_logo_url || null
+                  }
+                  initialEmployerBusinessName={
+                    (profile.organizations as { employer_business_name?: string | null })?.employer_business_name || null
+                  }
+                  initialAbn={
+                    (profile.organizations as { abn?: string | null })?.abn || null
+                  }
                 />
               </CardContent>
             </Card>

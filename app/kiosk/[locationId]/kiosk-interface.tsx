@@ -20,6 +20,8 @@ interface KioskInterfaceProps {
   locationId: string
   locationName: string
   organizationId: string
+  organizationName: string
+  companyLogoUrl: string | null
   employees: Employee[]
 }
 
@@ -27,6 +29,8 @@ export const KioskInterface = ({
   locationId,
   locationName,
   organizationId,
+  organizationName,
+  companyLogoUrl,
   employees,
 }: KioskInterfaceProps) => {
   const [state, setState] = useState<KioskState>('idle')
@@ -128,13 +132,28 @@ export const KioskInterface = ({
       <div className="w-full max-w-2xl space-y-8">
         {/* Location Header - Only shown in idle state */}
         {state === 'idle' && (
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-              {locationName}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Employee Time Clock
-            </p>
+          <div className="text-center space-y-4">
+            {companyLogoUrl ? (
+              <div className="flex flex-col items-center space-y-3">
+                <img
+                  src={companyLogoUrl}
+                  alt={organizationName}
+                  className="h-28 w-auto max-w-sm object-contain"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Employee Time Clock
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                  {organizationName || locationName}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Employee Time Clock
+                </p>
+              </div>
+            )}
           </div>
         )}
 

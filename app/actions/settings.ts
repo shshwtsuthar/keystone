@@ -25,7 +25,7 @@ export const updateProfile = async (fullName: string) => {
   return { success: true }
 }
 
-export const updateOrganization = async (name: string) => {
+export const updateOrganization = async (formData: FormData) => {
   const supabase = await createClient()
   const profile = await getCurrentProfile()
 
@@ -37,9 +37,127 @@ export const updateOrganization = async (name: string) => {
     return { error: 'Only organization owners can update organization settings' }
   }
 
+  const name = formData.get('name') as string
+  const employerBusinessName = formData.get('employerBusinessName') as string | null
+  const abn = formData.get('abn') as string | null
+  const companyLogo = formData.get('companyLogo') as File | null
+  const removeLogo = formData.get('removeLogo') === 'true'
+
+  // Normalize ABN (remove spaces, keep only digits)
+  const normalizedAbn = abn ? abn.replace(/\s+/g, '') : null
+
+  // Validate ABN if provided (should be 11 digits)
+  if (normalizedAbn && !/^\d{11}$/.test(normalizedAbn)) {
+    return { error: 'ABN must be 11 digits' }
+  }
+
+  let logoUrl: string | null = null
+
+  // Handle logo upload
+  if (companyLogo && companyLogo.size > 0) {
+    // Validate file type
+    if (!companyLogo.type.startsWith('image/')) {
+      return { error: 'Logo must be an image file' }
+    }
+
+    // Validate file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (companyLogo.size > maxSize) {
+      return { error: 'Logo file size must be less than 5MB' }
+    }
+
+    // Get current organization to check for existing logo
+    const { data: currentOrg } = await supabase
+      .from('organizations')
+      .select('company_logo_url')
+      .eq('id', profile.organization_id)
+      .single()
+
+    // Delete old logo if it exists
+    if (currentOrg?.company_logo_url) {
+      const oldLogoPath = currentOrg.company_logo_url.split('/').pop()
+      if (oldLogoPath) {
+        await supabase.storage
+          .from('company-logos')
+          .remove([oldLogoPath])
+      }
+    }
+
+    // Generate unique filename
+    const fileExt = companyLogo.name.split('.').pop()
+    const fileName = `${profile.organization_id}-${Date.now()}.${fileExt}`
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('company-logos')
+      .upload(fileName, companyLogo, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (uploadError) {
+      return { error: `Failed to upload logo: ${uploadError.message}` }
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('company-logos')
+      .getPublicUrl(fileName)
+
+    logoUrl = urlData.publicUrl
+  } else if (removeLogo) {
+    // Remove logo if requested
+    const { data: currentOrg } = await supabase
+      .from('organizations')
+      .select('company_logo_url')
+      .eq('id', profile.organization_id)
+      .single()
+
+    if (currentOrg?.company_logo_url) {
+      const oldLogoPath = currentOrg.company_logo_url.split('/').pop()
+      if (oldLogoPath) {
+        await supabase.storage
+          .from('company-logos')
+          .remove([oldLogoPath])
+      }
+    }
+    logoUrl = null
+  } else {
+    // Keep existing logo if not updating
+    const { data: currentOrg } = await supabase
+      .from('organizations')
+      .select('company_logo_url')
+      .eq('id', profile.organization_id)
+      .single()
+    logoUrl = currentOrg?.company_logo_url || null
+  }
+
+  // Prepare update object
+  const updateData: {
+    name: string
+    employer_business_name?: string | null
+    abn?: string | null
+    company_logo_url?: string | null
+  } = {
+    name,
+  }
+
+  if (employerBusinessName !== undefined) {
+    updateData.employer_business_name = employerBusinessName || null
+  }
+
+  if (normalizedAbn !== undefined) {
+    updateData.abn = normalizedAbn || null
+  }
+
+  if (companyLogo || removeLogo) {
+    updateData.company_logo_url = logoUrl
+  }
+
+  // Update organization
   const { error } = await supabase
     .from('organizations')
-    .update({ name })
+    .update(updateData)
     .eq('id', profile.organization_id)
 
   if (error) {
