@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { useDropzone } from 'react-dropzone'
 import { updateOrganization } from '@/app/actions/settings'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,7 +19,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { X } from 'lucide-react'
+import { X, Upload, Image as ImageIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 const organizationSchema = z.object({
   name: z.string().min(1, 'Organization name is required').max(100, 'Name is too long'),
@@ -50,7 +52,6 @@ export const OrganizationSettings = ({
   const [logoPreview, setLogoPreview] = useState<string | null>(initialCompanyLogoUrl || null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [removeLogo, setRemoveLogo] = useState(false)
-  const [fileInputKey, setFileInputKey] = useState(0)
 
   // Format ABN for display (XX XXX XXX XXX)
   const formatAbn = (value: string) => {
@@ -70,8 +71,8 @@ export const OrganizationSettings = ({
     },
   })
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+  const handleFileAccept = useCallback((acceptedFiles: File[]) => {
+    const file = acceptedFiles[0]
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
@@ -96,13 +97,26 @@ export const OrganizationSettings = ({
       }
       reader.readAsDataURL(file)
     }
-  }
+  }, [])
+
+  const handleFileReject = useCallback(() => {
+    toast.error('Invalid file. Please upload an image file (JPG, PNG, GIF, WebP) under 5MB')
+  }, [])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleFileAccept,
+    onDropRejected: handleFileReject,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp'],
+    },
+    maxSize: 5 * 1024 * 1024, // 5MB
+    multiple: false,
+  })
 
   const handleRemoveLogo = () => {
     setSelectedFile(null)
     setLogoPreview(null)
     setRemoveLogo(true)
-    setFileInputKey((prev) => prev + 1) // Reset file input
   }
 
   const handleSubmit = async (values: OrganizationFormValues) => {
@@ -139,6 +153,74 @@ export const OrganizationSettings = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* Company Logo Upload - First */}
+        <FormItem>
+          <FormLabel>Company Logo</FormLabel>
+          <div className="space-y-4">
+            {logoPreview ? (
+              <div className="relative inline-block">
+                <img
+                  src={logoPreview}
+                  alt="Company logo preview"
+                  className="h-32 w-32 object-contain rounded-md border border-border"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                  onClick={handleRemoveLogo}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <FormControl>
+                <div
+                  {...getRootProps()}
+                  className={cn(
+                    'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
+                    isDragActive
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50 hover:bg-accent/50'
+                  )}
+                >
+                  <input {...getInputProps()} />
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <div className="rounded-full bg-muted p-4">
+                      {isDragActive ? (
+                        <Upload className="h-8 w-8 text-primary" />
+                      ) : (
+                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      {isDragActive ? (
+                        <p className="text-sm font-medium text-primary">
+                          Drop the image here...
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium">
+                            Click to upload or drag and drop
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            PNG, JPG, GIF, WebP up to 5MB
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </FormControl>
+            )}
+            <FormDescription>
+              Upload your company logo. Maximum file size: 5MB. Supported formats: JPG, PNG, GIF, WebP.
+            </FormDescription>
+          </div>
+        </FormItem>
+
+        {/* Organization Name - Second */}
         <FormField
           control={form.control}
           name="name"
@@ -156,48 +238,13 @@ export const OrganizationSettings = ({
           )}
         />
 
-        <FormItem>
-          <FormLabel>Company Logo</FormLabel>
-          <div className="space-y-4">
-            {logoPreview && (
-              <div className="relative inline-block">
-                <img
-                  src={logoPreview}
-                  alt="Company logo preview"
-                  className="h-32 w-32 object-contain rounded-md border border-border"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                  onClick={handleRemoveLogo}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-            <FormControl>
-              <Input
-                key={fileInputKey}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="cursor-pointer"
-              />
-            </FormControl>
-            <FormDescription>
-              Upload your company logo. Maximum file size: 5MB. Supported formats: JPG, PNG, GIF, WebP.
-            </FormDescription>
-          </div>
-        </FormItem>
-
+        {/* Legal Business Name - Third */}
         <FormField
           control={form.control}
           name="employerBusinessName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Employer Business Name</FormLabel>
+              <FormLabel>Legal Business Name</FormLabel>
               <FormControl>
                 <Input placeholder="Your Business Name" {...field} />
               </FormControl>
@@ -209,6 +256,7 @@ export const OrganizationSettings = ({
           )}
         />
 
+        {/* ABN - Fourth */}
         <FormField
           control={form.control}
           name="abn"
