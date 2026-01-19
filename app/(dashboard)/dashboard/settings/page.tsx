@@ -28,6 +28,10 @@ export default async function SettingsPage() {
           abn:
             (profile.organizations as { abn?: string | null })?.abn ||
             null,
+          superannuationDefaultRate:
+            (profile.organizations as {
+              superannuation_default_rate?: number | null
+            })?.superannuation_default_rate || null,
         }
       : null
 

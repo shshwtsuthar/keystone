@@ -36,36 +36,48 @@ export type Database = {
     Tables: {
       employees: {
         Row: {
+          classification: string | null
           created_at: string
           default_location_id: string | null
           full_name: string
           id: string
           is_active: boolean
+          member_number: string | null
           organization_id: string
           pay_rate: number | null
           pin_hash: string
+          saturday_sunday_rate: number | null
+          super_fund_name: string | null
           updated_at: string
         }
         Insert: {
+          classification?: string | null
           created_at?: string
           default_location_id?: string | null
           full_name: string
           id?: string
           is_active?: boolean
+          member_number?: string | null
           organization_id: string
           pay_rate?: number | null
           pin_hash: string
+          saturday_sunday_rate?: number | null
+          super_fund_name?: string | null
           updated_at?: string
         }
         Update: {
+          classification?: string | null
           created_at?: string
           default_location_id?: string | null
           full_name?: string
           id?: string
           is_active?: boolean
+          member_number?: string | null
           organization_id?: string
           pay_rate?: number | null
           pin_hash?: string
+          saturday_sunday_rate?: number | null
+          super_fund_name?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -131,6 +143,7 @@ export type Database = {
           employer_business_name: string | null
           id: string
           name: string
+          superannuation_default_rate: number | null
           updated_at: string
         }
         Insert: {
@@ -140,6 +153,7 @@ export type Database = {
           employer_business_name?: string | null
           id?: string
           name: string
+          superannuation_default_rate?: number | null
           updated_at?: string
         }
         Update: {
@@ -149,6 +163,7 @@ export type Database = {
           employer_business_name?: string | null
           id?: string
           name?: string
+          superannuation_default_rate?: number | null
           updated_at?: string
         }
         Relationships: []

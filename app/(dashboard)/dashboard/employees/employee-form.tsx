@@ -37,6 +37,10 @@ const employeeSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
   payRate: z.string().optional(),
   defaultLocationId: z.string().optional(),
+  classification: z.string().optional(),
+  superFundName: z.string().optional(),
+  memberNumber: z.string().optional(),
+  saturdaySundayRate: z.string().optional(),
 })
 
 type EmployeeFormValues = z.infer<typeof employeeSchema>
@@ -53,6 +57,10 @@ interface EmployeeFormProps {
     pay_rate: number | null
     default_location_id: string | null
     is_active: boolean
+    classification?: string | null
+    super_fund_name?: string | null
+    member_number?: string | null
+    saturday_sunday_rate?: number | null
   }
   locations: Location[]
   onSuccess?: () => void
@@ -68,8 +76,12 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
     resolver: zodResolver(employeeSchema),
     defaultValues: {
       fullName: employee?.full_name || '',
-      payRate: employee?.pay_rate?.toString() || '',
+      payRate: employee?.pay_rate != null ? employee.pay_rate.toString() : '',
       defaultLocationId: employee?.default_location_id || '',
+      classification: employee?.classification || '',
+      superFundName: employee?.super_fund_name || '',
+      memberNumber: employee?.member_number || '',
+      saturdaySundayRate: employee?.saturday_sunday_rate != null ? employee.saturday_sunday_rate.toString() : '',
     },
   })
 
@@ -82,7 +94,11 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
           values.fullName,
           values.payRate ? parseFloat(values.payRate) : null,
           values.defaultLocationId || null,
-          employee.is_active
+          employee.is_active,
+          values.classification || null,
+          values.superFundName || null,
+          values.memberNumber || null,
+          values.saturdaySundayRate ? parseFloat(values.saturdaySundayRate) : null
         )
         if (result.error) {
           toast.error(result.error)
@@ -95,7 +111,11 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
         const result = await createEmployee(
           values.fullName,
           values.payRate ? parseFloat(values.payRate) : null,
-          values.defaultLocationId || null
+          values.defaultLocationId || null,
+          values.classification || null,
+          values.superFundName || null,
+          values.memberNumber || null,
+          values.saturdaySundayRate ? parseFloat(values.saturdaySundayRate) : null
         )
         if (result.error) {
           toast.error(result.error)
@@ -184,6 +204,75 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
                 </Select>
                 <FormDescription>
                   Default location for this employee
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="classification"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Classification</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Full-time, Part-time" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Employee classification
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="superFundName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Super Fund Name (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Hostplus" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Name of the superannuation fund
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="memberNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Member Number (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Member number" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Superannuation fund member number
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="saturdaySundayRate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Saturday/Sunday Rate (Optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="20.00"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Hourly rate for Saturday and Sunday work
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -41,6 +41,7 @@ export const updateOrganization = async (formData: FormData) => {
   const name = formData.get('name') as string
   const employerBusinessName = formData.get('employerBusinessName') as string | null
   const abn = formData.get('abn') as string | null
+  const superannuationDefaultRate = formData.get('superannuationDefaultRate') as string | null
   const companyLogo = formData.get('companyLogo') as File | null
   const removeLogo = formData.get('removeLogo') === 'true'
 
@@ -133,11 +134,22 @@ export const updateOrganization = async (formData: FormData) => {
     logoUrl = currentOrg?.company_logo_url || null
   }
 
+  // Parse superannuation default rate
+  const parsedSuperannuationRate = superannuationDefaultRate && superannuationDefaultRate.trim() !== ''
+    ? parseFloat(superannuationDefaultRate)
+    : null
+
+  // Validate superannuation rate if provided
+  if (parsedSuperannuationRate !== null && (isNaN(parsedSuperannuationRate) || parsedSuperannuationRate < 0 || parsedSuperannuationRate > 100)) {
+    return { error: 'Superannuation rate must be between 0 and 100' }
+  }
+
   // Prepare update object
   const updateData: {
     name: string
     employer_business_name?: string | null
     abn?: string | null
+    superannuation_default_rate?: number | null
     company_logo_url?: string | null
   } = {
     name,
@@ -149,6 +161,10 @@ export const updateOrganization = async (formData: FormData) => {
 
   if (normalizedAbn !== undefined) {
     updateData.abn = normalizedAbn || null
+  }
+
+  if (superannuationDefaultRate !== undefined) {
+    updateData.superannuation_default_rate = parsedSuperannuationRate
   }
 
   if (companyLogo || removeLogo) {

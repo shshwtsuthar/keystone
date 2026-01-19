@@ -47,6 +47,10 @@ interface Employee {
   pay_rate: number | null
   default_location_id: string | null
   is_active: boolean
+  classification?: string | null
+  super_fund_name?: string | null
+  member_number?: string | null
+  saturday_sunday_rate?: number | null
   locations?: {
     name: string
   } | null

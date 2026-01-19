@@ -24,6 +24,7 @@ interface SettingsLayoutProps {
     companyLogoUrl: string | null
     employerBusinessName: string | null
     abn: string | null
+    superannuationDefaultRate: number | null
   } | null
   preferences: {
     timezone: string
@@ -114,6 +115,7 @@ export const SettingsLayout = ({
                 initialCompanyLogoUrl={organizationData.companyLogoUrl}
                 initialEmployerBusinessName={organizationData.employerBusinessName}
                 initialAbn={organizationData.abn}
+                initialSuperannuationDefaultRate={organizationData.superannuationDefaultRate}
               />
             </CardContent>
           </Card>

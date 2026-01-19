@@ -11,7 +11,11 @@ const generatePin = (): string => {
 export const createEmployee = async (
   fullName: string,
   payRate: number | null,
-  defaultLocationId: string | null
+  defaultLocationId: string | null,
+  classification: string | null,
+  superFundName: string | null,
+  memberNumber: string | null,
+  saturdaySundayRate: number | null
 ) => {
   const supabase = await createClient()
   
@@ -43,6 +47,10 @@ export const createEmployee = async (
       pay_rate: payRate,
       default_location_id: defaultLocationId,
       pin_hash: pinHash,
+      classification: classification,
+      super_fund_name: superFundName,
+      member_number: memberNumber,
+      saturday_sunday_rate: saturdaySundayRate,
     })
     .select()
     .single()
@@ -61,7 +69,11 @@ export const updateEmployee = async (
   fullName: string,
   payRate: number | null,
   defaultLocationId: string | null,
-  isActive: boolean
+  isActive: boolean,
+  classification: string | null,
+  superFundName: string | null,
+  memberNumber: string | null,
+  saturdaySundayRate: number | null
 ) => {
   const supabase = await createClient()
 
@@ -72,6 +84,10 @@ export const updateEmployee = async (
       pay_rate: payRate,
       default_location_id: defaultLocationId,
       is_active: isActive,
+      classification: classification,
+      super_fund_name: superFundName,
+      member_number: memberNumber,
+      saturday_sunday_rate: saturdaySundayRate,
     })
     .eq('id', id)
 

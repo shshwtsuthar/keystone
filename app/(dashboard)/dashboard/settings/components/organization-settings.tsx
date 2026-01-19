@@ -30,6 +30,14 @@ const organizationSchema = z.object({
     .regex(/^(\d{2}\s?\d{3}\s?\d{3}\s?\d{3}|\d{11})$/, 'ABN must be 11 digits (format: XX XXX XXX XXX)')
     .optional()
     .or(z.literal('')),
+  superannuationDefaultRate: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 100),
+      'Superannuation rate must be between 0 and 100'
+    )
+    .or(z.literal('')),
 })
 
 type OrganizationFormValues = z.infer<typeof organizationSchema>
@@ -39,6 +47,7 @@ interface OrganizationSettingsProps {
   initialCompanyLogoUrl?: string | null
   initialEmployerBusinessName?: string | null
   initialAbn?: string | null
+  initialSuperannuationDefaultRate?: number | null
 }
 
 export const OrganizationSettings = ({
@@ -46,6 +55,7 @@ export const OrganizationSettings = ({
   initialCompanyLogoUrl,
   initialEmployerBusinessName,
   initialAbn,
+  initialSuperannuationDefaultRate,
 }: OrganizationSettingsProps) => {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -68,6 +78,7 @@ export const OrganizationSettings = ({
       name: initialName,
       employerBusinessName: initialEmployerBusinessName || '',
       abn: initialAbn ? formatAbn(initialAbn) : '',
+      superannuationDefaultRate: initialSuperannuationDefaultRate != null ? initialSuperannuationDefaultRate.toString() : '',
     },
   })
 
@@ -126,6 +137,7 @@ export const OrganizationSettings = ({
       formData.append('name', values.name)
       formData.append('employerBusinessName', values.employerBusinessName || '')
       formData.append('abn', values.abn || '')
+      formData.append('superannuationDefaultRate', values.superannuationDefaultRate || '')
       
       if (selectedFile) {
         formData.append('companyLogo', selectedFile)
@@ -276,6 +288,31 @@ export const OrganizationSettings = ({
               </FormControl>
               <FormDescription>
                 Your 11-digit Australian Business Number (format: XX XXX XXX XXX)
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Superannuation Default Rate - Fifth */}
+        <FormField
+          control={form.control}
+          name="superannuationDefaultRate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Superannuation Default Rate</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  placeholder="10.50"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Default superannuation rate as a percentage (e.g., 10.5 for 10.5%)
               </FormDescription>
               <FormMessage />
             </FormItem>
