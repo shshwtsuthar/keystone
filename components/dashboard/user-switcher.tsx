@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ChevronsUpDown, LogOut, Bell, Settings } from "lucide-react"
+import { ChevronsUpDown, LogOut, Bell, Settings, Palette, Check } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -11,7 +11,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu"
+import { useTheme } from "@/hooks/use-theme"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -30,6 +34,7 @@ interface UserSwitcherProps {
 export const UserSwitcher = ({ user }: UserSwitcherProps) => {
   const { isMobile } = useSidebar()
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
 
   const handleSignOut = async () => {
     await signOut()
@@ -42,6 +47,10 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
 
   const handleSettings = () => {
     router.push("/dashboard/settings")
+  }
+
+  const handleThemeChange = (newTheme: "light" | "dark" | "blue-light") => {
+    setTheme(newTheme)
   }
 
   const getInitials = (name: string) => {
@@ -105,6 +114,54 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
               <Settings className="size-4" />
               <span>Settings</span>
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="gap-2 p-2">
+                <Palette className="size-4" />
+                <span>Theme</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem
+                  onClick={() => handleThemeChange("light")}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === "light" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <div className="size-4" />
+                    )}
+                    <span>Light</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleThemeChange("dark")}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === "dark" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <div className="size-4" />
+                    )}
+                    <span>Dark</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleThemeChange("blue-light")}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === "blue-light" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <div className="size-4" />
+                    )}
+                    <span>Blue Light</span>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}

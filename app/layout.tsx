@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { DisableZoom } from "@/components/disable-zoom";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export const metadata: Metadata = {
   title: "Keystone - Time Tracking",
@@ -23,13 +24,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}
       >
-        <DisableZoom />
-        {children}
-        <Toaster />
+        <ThemeProvider>
+          <DisableZoom />
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
