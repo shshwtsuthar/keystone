@@ -83,7 +83,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full gap-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
@@ -132,7 +132,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Charts Section - Side by Side */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 flex-1 min-h-0">
         <HoursChart
           dailyData={dailyHours}
           weeklyData={weeklyHours}

@@ -65,8 +65,8 @@ export const HoursChart = ({ dailyData, weeklyData, monthlyData }: HoursChartPro
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+    <Card className="flex flex-col h-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 shrink-0">
         <div>
           <CardTitle>Hours Worked</CardTitle>
           <CardDescription>Track hours worked over time</CardDescription>
@@ -95,9 +95,9 @@ export const HoursChart = ({ dailyData, weeklyData, monthlyData }: HoursChartPro
           </Button>
         </ButtonGroup>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 min-h-0">
         {hasData ? (
-          <ChartContainer config={chartConfig}>
+          <ChartContainer config={chartConfig} className="h-full !aspect-auto">
             <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
               <defs>
                 <linearGradient id="fillHours" x1="0" y1="0" x2="0" y2="1">
@@ -138,7 +138,7 @@ export const HoursChart = ({ dailyData, weeklyData, monthlyData }: HoursChartPro
             </AreaChart>
           </ChartContainer>
         ) : (
-          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+          <div className="flex items-center justify-center h-full text-muted-foreground">
             <p>No data available for this period</p>
           </div>
         )}

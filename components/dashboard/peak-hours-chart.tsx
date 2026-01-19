@@ -27,13 +27,13 @@ export const PeakHoursChart = ({ peakHours }: PeakHoursChartProps) => {
   }))
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="flex flex-col h-full">
+      <CardHeader className="shrink-0">
         <CardTitle className="text-sm font-medium">Peak Hours</CardTitle>
         <CardDescription>Employee activity by hour of day</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={peakHoursConfig}>
+      <CardContent className="flex-1 min-h-0">
+        <ChartContainer config={peakHoursConfig} className="h-full !aspect-auto">
           <BarChart data={peakHoursData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
