@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { verifyEmployeePin, getEmployeeStatus, performClockAction, verifyMasterPin } from '@/app/actions/kiosk'
+import { useKioskLockdown } from '@/hooks/use-kiosk-lockdown'
 import { toast } from 'sonner'
 import { LogIn, LogOut, Coffee, CheckCircle2 } from 'lucide-react'
 import { Spinner } from '@/components/ui/spinner'
@@ -52,10 +53,14 @@ export const KioskInterface = ({
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [masterPin, setMasterPin] = useState('')
   const [isVerifyingMasterPin, setIsVerifyingMasterPin] = useState(false)
+  const [allowExit, setAllowExit] = useState(false)
   
   // Track clicks for exit kiosk
   const clickCountRef = useRef(0)
   const clickTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Apply kiosk lockdown - prevent all navigation except via master PIN
+  useKioskLockdown(allowExit)
 
   // Reset to idle after success
   useEffect(() => {
@@ -182,8 +187,14 @@ export const KioskInterface = ({
         return
       }
 
+      // Set flag to allow exit before redirecting
+      setAllowExit(true)
       toast.success('Exiting kiosk mode...')
-      router.push('/dashboard')
+      
+      // Small delay to ensure state updates
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 100)
     } catch (error) {
       toast.error('An unexpected error occurred')
       setIsVerifyingMasterPin(false)
