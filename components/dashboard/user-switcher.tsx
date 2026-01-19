@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { ChevronsUpDown, LogOut, Bell, Settings } from "lucide-react"
 
 import {
@@ -28,6 +29,7 @@ interface UserSwitcherProps {
 
 export const UserSwitcher = ({ user }: UserSwitcherProps) => {
   const { isMobile } = useSidebar()
+  const router = useRouter()
 
   const handleSignOut = async () => {
     await signOut()
@@ -39,8 +41,7 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
   }
 
   const handleSettings = () => {
-    // TODO: Navigate to settings page
-    console.log("Settings clicked")
+    router.push("/dashboard/settings")
   }
 
   const getInitials = (name: string) => {
