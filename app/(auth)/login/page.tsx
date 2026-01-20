@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { signIn } from '@/app/actions/auth'
 import { LoginForm } from '@/components/login-form'
 import { FloatingPaths } from '@/components/kokonutui/background-paths'
@@ -47,6 +48,13 @@ function LoginPageContent() {
       <div className="flex flex-col gap-4 p-6 md:p-10 border-r border-border">
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
+            <Image
+              src="/illustrations/keystone.png"
+              alt="Keystone"
+              width={24}
+              height={24}
+              className="h-6 w-6"
+            />
             Keystone
           </a>
         </div>
