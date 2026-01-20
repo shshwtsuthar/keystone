@@ -10,7 +10,7 @@ import { FloatingPaths } from '@/components/kokonutui/background-paths'
 function LoginPageContent() {
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(searchParams.get('message') || null)
+  const [successMessage] = useState<string | null>(searchParams.get('message') || null)
   const [isPending, setIsPending] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -31,11 +31,12 @@ function LoginPageContent() {
         setIsPending(false)
       }
       // If no error, redirect will happen (redirect() throws a special error in Next.js)
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Next.js redirect() throws a special error - don't catch it, let it propagate
       // Only catch actual errors
-      if (err?.digest && !err.digest.startsWith('NEXT_REDIRECT')) {
-        setError(err?.message || 'An unexpected error occurred')
+      const error = err as { digest?: string; message?: string }
+      if (error?.digest && !error.digest.startsWith('NEXT_REDIRECT')) {
+        setError(error?.message || 'An unexpected error occurred')
         setIsPending(false)
       }
       // Re-throw redirect errors

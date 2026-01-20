@@ -38,7 +38,6 @@ interface KioskInterfaceProps {
 export const KioskInterface = ({
   locationId,
   locationName,
-  organizationId,
   organizationName,
   companyLogoUrl,
   employees,
@@ -195,7 +194,7 @@ export const KioskInterface = ({
       setTimeout(() => {
         router.push('/dashboard')
       }, 100)
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
       setIsVerifyingMasterPin(false)
     }
@@ -215,6 +214,7 @@ export const KioskInterface = ({
           <div className="text-center space-y-4">
             {companyLogoUrl ? (
               <div className="flex flex-col items-center space-y-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={companyLogoUrl}
                   alt={organizationName}

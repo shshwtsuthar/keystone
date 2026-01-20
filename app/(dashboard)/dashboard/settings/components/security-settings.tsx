@@ -78,7 +78,7 @@ export const SecuritySettings = () => {
         toast.success('Password updated successfully')
         form.reset()
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -107,7 +107,7 @@ export const SecuritySettings = () => {
         setPasswordVerified(true)
         toast.success('Password verified')
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
     } finally {
       setIsVerifyingPassword(false)
@@ -132,7 +132,7 @@ export const SecuritySettings = () => {
         setPasswordInput('')
         setMasterPin('')
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
     } finally {
       setIsUpdatingPin(false)

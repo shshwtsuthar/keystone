@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { format } from 'date-fns'
 import {
   Dialog,
   DialogContent,
@@ -28,7 +27,6 @@ export const NewPayRunWizard = () => {
   const [isGeneratingPayslips, setIsGeneratingPayslips] = useState(false)
   const stepFinalizeRef = useRef<StepFinalizeRef>(null)
   const [employees, setEmployees] = useState<Array<{ id: string; full_name: string; pay_rate: number | null }>>([])
-  const [loadingEmployees, setLoadingEmployees] = useState(false)
 
   // Wizard data state
   const [payPeriodStart, setPayPeriodStart] = useState<Date | undefined>(undefined)
@@ -42,10 +40,9 @@ export const NewPayRunWizard = () => {
     if (open && employees.length === 0) {
       loadEmployees()
     }
-  }, [open])
+  }, [open, employees.length])
 
   const loadEmployees = async () => {
-    setLoadingEmployees(true)
     try {
       const { employees: empList, error } = await getActiveEmployees()
       if (error) {
@@ -53,10 +50,8 @@ export const NewPayRunWizard = () => {
       } else {
         setEmployees(empList || [])
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to load employees')
-    } finally {
-      setLoadingEmployees(false)
     }
   }
 

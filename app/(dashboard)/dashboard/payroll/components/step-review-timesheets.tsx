@@ -59,7 +59,7 @@ export const StepReviewTimesheets = ({
       <CardHeader>
         <CardTitle>Review Timesheets</CardTitle>
         <CardDescription>
-          Click "Review" to fetch all clock-in/clock-out timesheets for each employee within the selected date range, calculate total hours worked, and compute gross earnings (hours × pay rate).
+          Click &quot;Review&quot; to fetch all clock-in/clock-out timesheets for each employee within the selected date range, calculate total hours worked, and compute gross earnings (hours × pay rate).
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -71,7 +71,6 @@ export const StepReviewTimesheets = ({
           <div className="space-y-3">
             {employees.map((employee) => {
               const reviewed = reviewedEmployees.has(employee.id)
-              const earnings = reviewedEmployees.get(employee.id)
 
               return (
                 <Card key={employee.id}>

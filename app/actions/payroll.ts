@@ -479,7 +479,7 @@ export const getPayrollMetrics = async (): Promise<PayrollMetrics> => {
       totalAmountPaid,
       employeesPaidThisMonth,
     }
-  } catch (error) {
+  } catch {
     return {
       totalPayRuns: 0,
       payRunsThisMonth: 0,

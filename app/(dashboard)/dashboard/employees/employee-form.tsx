@@ -127,7 +127,7 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
           router.refresh()
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -148,7 +148,7 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
                   <Input placeholder="John Doe" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Employee's full name
+                  Employee&apos;s full name
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -308,7 +308,7 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
             onClick={() => setShowPinDialog(false)}
             className="w-full"
           >
-            I've Saved This PIN
+            I&apos;ve Saved This PIN
           </Button>
         </DialogContent>
       </Dialog>

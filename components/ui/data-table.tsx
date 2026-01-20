@@ -22,7 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTablePagination } from "@/components/ui/data-table-pagination"
 import { DataTableViewOptions } from "@/components/ui/data-table-view-options"
@@ -44,7 +43,6 @@ export const DataTable = <TData, TValue>({
   data,
   searchKey,
   searchPlaceholder = "Filter...",
-  enableRowSelection = false,
   enableColumnVisibility = true,
   enablePagination = true,
   enableSearch = false,

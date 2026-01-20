@@ -155,7 +155,7 @@ export const OrganizationSettings = ({
         setSelectedFile(null)
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
     } finally {
       setIsLoading(false)
@@ -171,6 +171,7 @@ export const OrganizationSettings = ({
           <div className="space-y-4">
             {logoPreview ? (
               <div className="relative inline-block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={logoPreview}
                   alt="Company logo preview"

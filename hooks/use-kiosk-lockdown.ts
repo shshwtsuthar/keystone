@@ -131,6 +131,8 @@ export const useKioskLockdown = (allowExit: boolean = false) => {
   }, [pathname, isKioskRoute])
 
   // Intercept Next.js router navigation
+  // Note: This intentionally modifies router methods to block navigation in kiosk mode
+  // This is a legitimate use case that requires overriding router behavior
   useEffect(() => {
     if (!isKioskRoute || allowExitRef.current) return
 
@@ -139,7 +141,9 @@ export const useKioskLockdown = (allowExit: boolean = false) => {
     const originalBack = router.back
     const originalForward = router.forward
 
-    // Override router methods
+    // Override router methods to block navigation when kiosk mode is active
+    // Note: This intentionally modifies router methods for kiosk mode
+    // eslint-disable-next-line react-hooks/immutability
     router.push = (...args: Parameters<typeof router.push>) => {
       if (!allowExitRef.current) {
         console.warn('Navigation blocked: Kiosk mode is active. Use master PIN to exit.')
@@ -148,6 +152,7 @@ export const useKioskLockdown = (allowExit: boolean = false) => {
       return originalPush.apply(router, args)
     }
 
+    // eslint-disable-next-line react-hooks/immutability
     router.replace = (...args: Parameters<typeof router.replace>) => {
       if (!allowExitRef.current) {
         console.warn('Navigation blocked: Kiosk mode is active. Use master PIN to exit.')
@@ -156,6 +161,7 @@ export const useKioskLockdown = (allowExit: boolean = false) => {
       return originalReplace.apply(router, args)
     }
 
+    // eslint-disable-next-line react-hooks/immutability
     router.back = () => {
       if (!allowExitRef.current) {
         console.warn('Navigation blocked: Kiosk mode is active. Use master PIN to exit.')
@@ -164,6 +170,7 @@ export const useKioskLockdown = (allowExit: boolean = false) => {
       return originalBack.apply(router)
     }
 
+    // eslint-disable-next-line react-hooks/immutability
     router.forward = () => {
       if (!allowExitRef.current) {
         console.warn('Navigation blocked: Kiosk mode is active. Use master PIN to exit.')
@@ -172,11 +179,15 @@ export const useKioskLockdown = (allowExit: boolean = false) => {
       return originalForward.apply(router)
     }
 
-    // Cleanup
+    // Cleanup: restore original methods
     return () => {
+      // eslint-disable-next-line react-hooks/immutability
       router.push = originalPush
+      // eslint-disable-next-line react-hooks/immutability
       router.replace = originalReplace
+      // eslint-disable-next-line react-hooks/immutability
       router.back = originalBack
+      // eslint-disable-next-line react-hooks/immutability
       router.forward = originalForward
     }
   }, [router, isKioskRoute])

@@ -13,7 +13,6 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
-  SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { LayoutDashboard, Users, MapPin, DollarSign } from 'lucide-react'
@@ -52,6 +51,7 @@ export default async function DashboardLayout({
           <div className="flex items-center gap-2 px-2">
             {companyLogoUrl ? (
               <div className="flex h-8 w-8 items-center justify-center rounded-lg overflow-hidden bg-background">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={companyLogoUrl}
                   alt={organizationName}

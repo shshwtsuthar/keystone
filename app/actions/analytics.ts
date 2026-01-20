@@ -211,7 +211,7 @@ export const getLaborCostData = async (
     totalHours += durationHours
     employeeSet.add(timesheet.employee_id)
 
-    const payRate = (timesheet.employees as any)?.pay_rate
+    const payRate = (timesheet.employees as { pay_rate?: number | null } | null)?.pay_rate
     if (payRate && typeof payRate === 'number') {
       totalLaborCost += durationHours * payRate
     }
@@ -286,7 +286,7 @@ export const getLocationStats = async (
     totalHours += durationHours
     employeeSet.add(timesheet.employee_id)
 
-    const payRate = (timesheet.employees as any)?.pay_rate
+    const payRate = (timesheet.employees as { pay_rate?: number | null } | null)?.pay_rate
     if (payRate && typeof payRate === 'number') {
       laborCost += durationHours * payRate
     }
@@ -362,7 +362,12 @@ export const getPeriodComparison = async (
 
   const { data: previousTimesheets } = await previousQuery
 
-  const calculateTotalHours = (timesheets: any[]): number => {
+  interface Timesheet {
+    clock_in: string
+    clock_out: string | null
+  }
+
+  const calculateTotalHours = (timesheets: Timesheet[]): number => {
     if (!timesheets) return 0
     return timesheets.reduce((total, ts) => {
       const clockIn = new Date(ts.clock_in)
@@ -444,7 +449,7 @@ export const getAdditionalMetrics = async (
     } else {
       employeeHoursMap.set(employeeId, {
         hours: durationHours,
-        full_name: (timesheet.employees as any)?.full_name || 'Unknown',
+        full_name: (timesheet.employees as { full_name?: string } | null)?.full_name || 'Unknown',
       })
     }
 

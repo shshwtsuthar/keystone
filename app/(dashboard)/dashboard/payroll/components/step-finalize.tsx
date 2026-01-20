@@ -3,8 +3,6 @@
 import { useState, useImperativeHandle, forwardRef } from 'react'
 import { format } from 'date-fns'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
 import {
   createPayRun,
   getPayslipData,
@@ -28,7 +26,7 @@ export interface StepFinalizeRef {
   isSubmitting: boolean
 }
 
-export const StepFinalize = forwardRef<StepFinalizeRef, StepFinalizeProps>(({
+const StepFinalizeComponent = forwardRef<StepFinalizeRef, StepFinalizeProps>(({
   payPeriodStart,
   payPeriodEnd,
   paymentDate,
@@ -245,4 +243,8 @@ export const StepFinalize = forwardRef<StepFinalizeRef, StepFinalizeProps>(({
     </div>
   )
 })
+
+StepFinalizeComponent.displayName = 'StepFinalize'
+
+export const StepFinalize = StepFinalizeComponent
 

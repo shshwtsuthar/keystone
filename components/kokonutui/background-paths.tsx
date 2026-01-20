@@ -1,9 +1,15 @@
 "use client"
 
+import { useState } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 
 export function FloatingPaths({ position }: { position: number }) {
+  // Generate random durations once per component mount using useState lazy initializer
+  const durations = useState(() => 
+    Array.from({ length: 36 }, () => 20 + Math.random() * 10)
+  )[0]
+
   const paths = Array.from({ length: 36 }, (_, i) => ({
     id: i,
     d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
@@ -35,7 +41,7 @@ export function FloatingPaths({ position }: { position: number }) {
               pathOffset: [0, 1, 0],
             }}
             transition={{
-              duration: 20 + Math.random() * 10,
+              duration: durations[path.id],
               repeat: Number.POSITIVE_INFINITY,
               ease: "linear",
             }}

@@ -90,7 +90,7 @@ export const updateOrganization = async (formData: FormData) => {
     const fileName = `${profile.organization_id}-${Date.now()}.${fileExt}`
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('company-logos')
       .upload(fileName, companyLogo, {
         cacheControl: '3600',

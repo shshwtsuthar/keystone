@@ -84,7 +84,7 @@ export function LocationForm({ location, onSuccess }: LocationFormProps) {
           router.refresh()
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
     } finally {
       setIsLoading(false)

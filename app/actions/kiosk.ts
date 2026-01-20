@@ -3,7 +3,6 @@
 import { createClient } from '@/utils/supabase/server'
 import bcrypt from 'bcryptjs'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 
 export const verifyEmployeePin = async (employeeId: string, pin: string) => {
   const supabase = await createClient()
@@ -266,7 +265,7 @@ export const getTopEmployeesByHours = async (limit: number = 5) => {
       existing.total_seconds += durationSeconds
     } else {
       employeeHoursMap.set(employeeId, {
-        full_name: (timesheet.employees as any).full_name,
+        full_name: (timesheet.employees as { full_name?: string } | null)?.full_name || 'Unknown',
         total_seconds: durationSeconds,
       })
     }

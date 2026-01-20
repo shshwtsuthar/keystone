@@ -54,7 +54,7 @@ export const PreferencesSettings = ({
         toast.success('Preferences updated successfully')
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
     } finally {
       setIsLoading(false)

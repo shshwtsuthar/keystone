@@ -200,7 +200,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
         }
         // Skip step 3 (company details) for non-owners
         setCurrentStep(userRole === 'owner' ? 3 : 4)
-      } catch (error) {
+      } catch {
         toast.error('An unexpected error occurred')
       } finally {
         setIsLoading(false)
@@ -232,7 +232,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
               setIsLoading(false)
               return
             }
-          } catch (error) {
+          } catch {
             toast.error('An unexpected error occurred')
             setIsLoading(false)
             return
@@ -259,7 +259,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
           return
         }
         setCurrentStep(5)
-      } catch (error) {
+      } catch {
         toast.error('An unexpected error occurred')
       } finally {
         setIsLoading(false)
@@ -281,7 +281,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
         }
         setTheme(values.theme)
         setCurrentStep(6)
-      } catch (error) {
+      } catch {
         toast.error('An unexpected error occurred')
       } finally {
         setIsLoading(false)
@@ -323,7 +323,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
       startTransition(() => {
         router.refresh()
       })
-    } catch (error) {
+    } catch {
       toast.error('An unexpected error occurred')
       setIsLoading(false)
     }
@@ -335,6 +335,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
         return (
           <div className="flex flex-col items-center justify-center space-y-6">
             <div className="flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/illustrations/onboarding_eye.png"
                 alt="Onboarding illustration"
@@ -343,7 +344,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
             </div>
             <div className="text-center">
               <p className="text-base text-muted-foreground leading-relaxed">
-                Hi business owner, welcome to <span className="text-foreground">Keystone</span>! I'm Shashwat, and I'll take you through the initial setup so that your business can reach new heights!
+                Hi business owner, welcome to <span className="text-foreground">Keystone</span>! I&apos;m Shashwat, and I&apos;ll take you through the initial setup so that your business can reach new heights!
               </p>
             </div>
           </div>
@@ -385,7 +386,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
             </Form>
             <div className="space-y-4 text-center">
               <p className="text-base text-muted-foreground leading-relaxed">
-                First, let's get you set up with your Master Key. You will require this key to exit Kiosk mode. Don't forget this key or you will get locked into it! You can reset this key through the{' '}
+                First, let&apos;s get you set up with your Master Key. You will require this key to exit Kiosk mode. Don&apos;t forget this key or you will get locked into it! You can reset this key through the{' '}
                 <span
                   className="text-primary underline cursor-not-allowed opacity-50"
                   onClick={(e) => e.preventDefault()}
@@ -414,6 +415,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
                   <div className="space-y-4">
                     {logoPreview ? (
                       <div className="relative inline-block">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={logoPreview}
                           alt="Company logo preview"
@@ -613,6 +615,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
         return (
           <div className="flex flex-col items-center justify-center space-y-6">
             <div className="flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/illustrations/onboarding_completed.png"
                 alt="Onboarding completed illustration"
@@ -621,7 +624,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
             </div>
             <div className="text-center">
               <p className="text-base text-muted-foreground leading-relaxed">
-                You're all set! You can change these settings through the{' '}
+                You&apos;re all set! You can change these settings through the{' '}
                 <Link
                   href="/dashboard/settings"
                   className="text-primary underline hover:no-underline"

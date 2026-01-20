@@ -1,5 +1,4 @@
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Note: Using gen_random_uuid() which is available by default in Supabase
 
 -- Create enum for timesheet status
 CREATE TYPE timesheet_status AS ENUM ('working', 'completed');
@@ -9,7 +8,7 @@ CREATE TYPE user_role AS ENUM ('owner', 'manager');
 
 -- Organizations table (Multi-tenant root)
 CREATE TABLE organizations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -27,7 +26,7 @@ CREATE TABLE profiles (
 
 -- Locations table
 CREATE TABLE locations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   address TEXT,
@@ -38,7 +37,7 @@ CREATE TABLE locations (
 
 -- Employees table
 CREATE TABLE employees (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   default_location_id UUID REFERENCES locations(id) ON DELETE SET NULL,
   full_name TEXT NOT NULL,
@@ -51,7 +50,7 @@ CREATE TABLE employees (
 
 -- Timesheets table
 CREATE TABLE timesheets (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   employee_id UUID NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
   location_id UUID NOT NULL REFERENCES locations(id) ON DELETE CASCADE,

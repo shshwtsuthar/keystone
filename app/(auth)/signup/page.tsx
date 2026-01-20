@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signUp } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
@@ -11,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function SignUpPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -31,11 +29,12 @@ export default function SignUpPage() {
         setIsLoading(false)
       }
       // If no error, redirect will happen (redirect() throws a special error in Next.js)
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Next.js redirect() throws a special error - don't catch it, let it propagate
       // Only catch actual errors
-      if (err?.digest && !err.digest.startsWith('NEXT_REDIRECT')) {
-        setError(err?.message || 'An unexpected error occurred')
+      const error = err as { digest?: string; message?: string }
+      if (error?.digest && !error.digest.startsWith('NEXT_REDIRECT')) {
+        setError(error?.message || 'An unexpected error occurred')
         setIsLoading(false)
       }
       // Re-throw redirect errors

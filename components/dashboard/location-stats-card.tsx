@@ -54,10 +54,6 @@ export const LocationStatsCard = ({
     setSelectedLocationId(value === 'all' ? undefined : value)
   }
 
-  const selectedLocationName = selectedLocationId
-    ? locations.find(l => l.id === selectedLocationId)?.name || 'Unknown'
-    : 'All Locations'
-
   return (
     <Card>
       <CardHeader>

@@ -20,7 +20,6 @@ export const StepTaxSuper = ({
 }: StepTaxSuperProps) => {
   const [defaultSuperRate, setDefaultSuperRate] = useState<number | null>(null)
   const [employeeSuperRates, setEmployeeSuperRates] = useState<Map<string, number>>(new Map())
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchSuperRate = async () => {
@@ -39,10 +38,8 @@ export const StepTaxSuper = ({
             setEmployeeSuperRates(rates)
           }
         }
-      } catch (error) {
+      } catch {
         toast.error('Failed to fetch superannuation rate')
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -76,7 +73,6 @@ export const StepTaxSuper = ({
     if (!earnings) return
 
     const grossPay = earnings.total
-    const currentDeductions = deductions.get(employeeId)
     const superRate = employeeSuperRates.get(employeeId) || defaultSuperRate || 0
     const calculatedSuper = (grossPay * superRate) / 100
 

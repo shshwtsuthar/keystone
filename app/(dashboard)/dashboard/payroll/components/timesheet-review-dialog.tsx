@@ -19,7 +19,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { getEmployeeTimesheets, updateTimesheet, type TimesheetWithId } from '@/app/actions/payroll'
+import { getEmployeeTimesheets, updateTimesheet } from '@/app/actions/payroll'
 import { calculateEmployeeHours } from '@/lib/payroll-utils'
 import { toast } from 'sonner'
 
@@ -61,6 +61,7 @@ export const TimesheetReviewDialog = ({
     if (open) {
       loadTimesheets()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, employeeId, payPeriodStart, payPeriodEnd])
 
   const loadTimesheets = async () => {
@@ -92,7 +93,7 @@ export const TimesheetReviewDialog = ({
       })
 
       setTimesheets(editable)
-    } catch (error) {
+    } catch {
       toast.error('Failed to load timesheets')
     } finally {
       setLoading(false)

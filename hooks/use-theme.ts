@@ -2,7 +2,6 @@
 
 import { useTheme as useNextTheme } from "next-themes"
 import { type Theme } from "@/components/providers/theme-provider"
-import { useEffect } from "react"
 
 export const useTheme = () => {
   const { theme, setTheme: setNextTheme, ...rest } = useNextTheme()

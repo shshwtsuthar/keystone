@@ -3,7 +3,7 @@ CREATE TYPE pay_run_status AS ENUM ('draft', 'finalized');
 
 -- Pay runs table
 CREATE TABLE pay_runs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   pay_period_start TIMESTAMPTZ NOT NULL,
   pay_period_end TIMESTAMPTZ NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE pay_runs (
 
 -- Pay run earnings table
 CREATE TABLE pay_run_earnings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   pay_run_id UUID NOT NULL REFERENCES pay_runs(id) ON DELETE CASCADE,
   employee_id UUID NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
   hours DECIMAL(10,2) NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE pay_run_earnings (
 
 -- Pay run deductions table
 CREATE TABLE pay_run_deductions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   pay_run_id UUID NOT NULL REFERENCES pay_runs(id) ON DELETE CASCADE,
   employee_id UUID NOT NULL REFERENCES employees(id) ON DELETE CASCADE,
   tax_withheld DECIMAL(10,2) NOT NULL DEFAULT 0,
