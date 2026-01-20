@@ -69,15 +69,21 @@ export const AdditionalMetrics = ({ metrics }: AdditionalMetricsProps) => {
         <CardContent>
           <ChartContainer config={peakHoursConfig}>
             <BarChart data={peakHoursData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="hsl(var(--muted))"
+                opacity={0.5}
+              />
               <XAxis
                 dataKey="hour"
-                tick={{ fontSize: 10 }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
                 angle={-45}
                 textAnchor="end"
                 height={60}
               />
-              <YAxis tick={{ fontSize: 10 }} />
+              <YAxis 
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} 
+              />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
@@ -99,7 +105,7 @@ export const AdditionalMetrics = ({ metrics }: AdditionalMetricsProps) => {
         <Card className="md:col-span-2 lg:col-span-4">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm font-medium">
-              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
               Overtime Employees ({metrics.overtimeEmployees.length})
             </CardTitle>
             <CardDescription>

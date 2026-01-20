@@ -16,11 +16,10 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { LayoutDashboard, Users, MapPin, DollarSign, Bug } from 'lucide-react'
+import { LayoutDashboard, Users, MapPin, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 import { UserSwitcher } from '@/components/dashboard/user-switcher'
 import { OnboardingWrapper } from '@/components/onboarding/onboarding-wrapper'
-import { DebugOnboardingButton } from '@/components/onboarding/debug-onboarding-button'
 
 export default async function DashboardLayout({
   children,
@@ -105,16 +104,6 @@ export default async function DashboardLayout({
                       <span>Payroll</span>
                     </Link>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-          <SidebarSeparator />
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <DebugOnboardingButton />
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>

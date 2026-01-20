@@ -35,15 +35,21 @@ export const PeakHoursChart = ({ peakHours }: PeakHoursChartProps) => {
       <CardContent className="flex-1 min-h-0">
         <ChartContainer config={peakHoursConfig} className="h-full !aspect-auto">
           <BarChart data={peakHoursData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke="hsl(var(--muted))"
+              opacity={0.5}
+            />
             <XAxis
               dataKey="hour"
-              tick={{ fontSize: 10 }}
+              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
               angle={-45}
               textAnchor="end"
               height={60}
             />
-            <YAxis tick={{ fontSize: 10 }} />
+            <YAxis 
+              tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} 
+            />
             <ChartTooltip
               content={
                 <ChartTooltipContent

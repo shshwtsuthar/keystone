@@ -105,15 +105,19 @@ export const HoursChart = ({ dailyData, weeklyData, monthlyData }: HoursChartPro
                   <stop offset="95%" stopColor="var(--color-hours)" stopOpacity={0.1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="hsl(var(--muted))"
+                opacity={0.5}
+              />
               <XAxis
                 dataKey="date"
                 tickFormatter={(value) => formatDateLabel(value, activeTab)}
-                className="text-xs"
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               />
               <YAxis
                 tickFormatter={(value) => formatHours(value)}
-                className="text-xs"
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
               />
               <ChartTooltip
                 content={
