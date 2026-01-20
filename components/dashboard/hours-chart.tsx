@@ -24,7 +24,7 @@ interface HoursChartProps {
 const chartConfig = {
   hours: {
     label: 'Hours',
-    color: 'hsl(var(--chart-1))',
+    color: 'var(--chart-1)',
   },
 } satisfies ChartConfig
 
@@ -99,12 +99,6 @@ export const HoursChart = ({ dailyData, weeklyData, monthlyData }: HoursChartPro
         {hasData ? (
           <ChartContainer config={chartConfig} className="h-full !aspect-auto">
             <AreaChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <defs>
-                <linearGradient id="fillHours" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--color-hours)" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="var(--color-hours)" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
               <CartesianGrid 
                 strokeDasharray="3 3" 
                 stroke="hsl(var(--muted))"
@@ -135,8 +129,9 @@ export const HoursChart = ({ dailyData, weeklyData, monthlyData }: HoursChartPro
               <Area
                 type="monotone"
                 dataKey="hours"
-                stroke="var(--color-hours)"
-                fill="url(#fillHours)"
+                stroke={chartConfig.hours.color}
+                fill={chartConfig.hours.color}
+                fillOpacity={0.2}
                 strokeWidth={2}
               />
             </AreaChart>

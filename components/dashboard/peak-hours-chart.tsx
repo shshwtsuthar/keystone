@@ -16,7 +16,7 @@ interface PeakHoursChartProps {
 const peakHoursConfig = {
   count: {
     label: 'Employees',
-    color: 'hsl(var(--chart-2))',
+    color: 'var(--chart-2)',
   },
 } satisfies ChartConfig
 
@@ -59,7 +59,9 @@ export const PeakHoursChart = ({ peakHours }: PeakHoursChartProps) => {
             />
             <Bar
               dataKey="count"
-              fill="var(--color-count)"
+              fill={peakHoursConfig.count.color}
+              stroke={peakHoursConfig.count.color}
+              strokeWidth={1}
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
