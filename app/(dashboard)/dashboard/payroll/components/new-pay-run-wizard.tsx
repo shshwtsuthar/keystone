@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { format } from 'date-fns'
 import {
   Dialog,
@@ -15,7 +15,8 @@ import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { StepSelectPeriod } from './step-select-period'
 import { StepReviewTimesheets } from './step-review-timesheets'
 import { StepTaxSuper } from './step-tax-super'
-import { StepFinalize } from './step-finalize'
+import { StepFinalize, type StepFinalizeRef } from './step-finalize'
+import { Spinner } from '@/components/ui/spinner'
 import { getActiveEmployees, type EmployeeEarnings, type EmployeeDeductions } from '@/app/actions/payroll'
 import { toast } from 'sonner'
 
@@ -24,6 +25,8 @@ const TOTAL_STEPS = 4
 export const NewPayRunWizard = () => {
   const [open, setOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
+  const [isGeneratingPayslips, setIsGeneratingPayslips] = useState(false)
+  const stepFinalizeRef = useRef<StepFinalizeRef>(null)
   const [employees, setEmployees] = useState<Array<{ id: string; full_name: string; pay_rate: number | null }>>([])
   const [loadingEmployees, setLoadingEmployees] = useState(false)
 
@@ -94,16 +97,8 @@ export const NewPayRunWizard = () => {
         toast.error('Please review at least one employee')
         return
       }
-    } else if (currentStep === 3) {
-      // Check all reviewed employees have deductions
-      const missingDeductions = Array.from(reviewedEmployees.keys()).filter(
-        (id) => !deductions.has(id)
-      )
-      if (missingDeductions.length > 0) {
-        toast.error('Please complete tax and superannuation for all employees')
-        return
-      }
     }
+    // Step 3 (Tax & Superannuation) is optional - no validation needed
 
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep(currentStep + 1)
@@ -194,6 +189,7 @@ export const NewPayRunWizard = () => {
         }
         return (
           <StepFinalize
+            ref={stepFinalizeRef}
             payPeriodStart={payPeriodStart}
             payPeriodEnd={payPeriodEnd}
             paymentDate={paymentDate}
@@ -224,7 +220,7 @@ export const NewPayRunWizard = () => {
         </DialogHeader>
 
         {/* Step Content */}
-        <div className="min-h-[400px]">{renderStep()}</div>
+        <div>{renderStep()}</div>
 
         {/* Navigation */}
         <div className="flex justify-between pt-4 border-t">
@@ -240,6 +236,27 @@ export const NewPayRunWizard = () => {
             <Button onClick={handleNext}>
               Next
               <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
+          ) : currentStep === TOTAL_STEPS ? (
+            <Button
+              onClick={async () => {
+                setIsGeneratingPayslips(true)
+                try {
+                  await stepFinalizeRef.current?.handleGeneratePayslips()
+                } finally {
+                  setIsGeneratingPayslips(false)
+                }
+              }}
+              disabled={isGeneratingPayslips}
+            >
+              {isGeneratingPayslips ? (
+                <>
+                  <Spinner className="h-4 w-4 mr-2" />
+                  Generating...
+                </>
+              ) : (
+                'Generate Payslips'
+              )}
             </Button>
           ) : null}
         </div>

@@ -333,13 +333,13 @@ export const getPayslipData = async (
       return { error: earningsError.message }
     }
 
-    // Fetch deductions for this employee in this pay run
+    // Fetch deductions for this employee in this pay run (optional - step 3 can be skipped)
     const { data: deduction, error: deductionError } = await supabase
       .from('pay_run_deductions')
       .select('tax_withheld, superannuation, gross_pay, net_pay')
       .eq('pay_run_id', payRunId)
       .eq('employee_id', employeeId)
-      .single()
+      .maybeSingle()
 
     if (deductionError) {
       return { error: deductionError.message }
@@ -372,9 +372,10 @@ export const getPayslipData = async (
       : [{ description: 'Regular hours', rate: 0, hours: 0, total: 0 }]
 
     // Calculate gross pay from earnings if not available in deduction
-    const grossPay = finalEarnings.reduce((sum, e) => sum + e.total, 0) || Number(deduction.gross_pay) || 0
+    const grossPay = finalEarnings.reduce((sum, e) => sum + e.total, 0) || Number(deduction?.gross_pay) || 0
 
     // Build PayslipData with proper defaults for all fields
+    // Deductions are optional (step 3 can be skipped), so provide defaults if missing
     const payslipData: PayslipData = {
       employerName: organization.employer_business_name || organization.name || 'Employer Name Not Set',
       employerABN: formatABN(organization.abn),
@@ -385,13 +386,13 @@ export const getPayslipData = async (
       payPeriodEnd,
       paymentDate,
       earnings: finalEarnings,
-      taxWithheld: Number(deduction.tax_withheld) || 0,
+      taxWithheld: Number(deduction?.tax_withheld) || 0,
       superannuation: {
         fundName: employee.super_fund_name || 'Not specified',
-        amount: Number(deduction.superannuation) || 0,
+        amount: Number(deduction?.superannuation) || 0,
       },
       grossPay: grossPay || 0,
-      netPay: Number(deduction.net_pay) || 0,
+      netPay: Number(deduction?.net_pay) || grossPay || 0, // If no deduction, net pay equals gross pay
     }
 
     return { data: payslipData }

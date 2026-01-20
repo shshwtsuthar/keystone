@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useImperativeHandle, forwardRef } from 'react'
 import { format } from 'date-fns'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -23,16 +23,26 @@ interface StepFinalizeProps {
   onComplete: () => void
 }
 
-export const StepFinalize = ({
+export interface StepFinalizeRef {
+  handleGeneratePayslips: () => Promise<void>
+  isSubmitting: boolean
+}
+
+export const StepFinalize = forwardRef<StepFinalizeRef, StepFinalizeProps>(({
   payPeriodStart,
   payPeriodEnd,
   paymentDate,
   reviewedEmployees,
   deductions,
   onComplete,
-}: StepFinalizeProps) => {
+}, ref) => {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useImperativeHandle(ref, () => ({
+    handleGeneratePayslips,
+    isSubmitting,
+  }))
 
   const handleGeneratePayslips = async () => {
     setIsSubmitting(true)
@@ -232,20 +242,7 @@ export const StepFinalize = ({
           </div>
         </CardContent>
       </Card>
-
-      <div className="flex justify-end">
-        <Button onClick={handleGeneratePayslips} disabled={isSubmitting} size="lg">
-          {isSubmitting ? (
-            <>
-              <Spinner className="h-4 w-4 mr-2" />
-              Generating...
-            </>
-          ) : (
-            'Generate Payslips'
-          )}
-        </Button>
-      </div>
     </div>
   )
-}
+})
 

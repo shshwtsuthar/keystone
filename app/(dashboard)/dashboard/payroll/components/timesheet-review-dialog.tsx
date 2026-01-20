@@ -15,6 +15,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DataTable } from '@/components/ui/data-table'
 import { Spinner } from '@/components/ui/spinner'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { CalendarIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { getEmployeeTimesheets, updateTimesheet, type TimesheetWithId } from '@/app/actions/payroll'
 import { calculateEmployeeHours } from '@/lib/payroll-utils'
 import { toast } from 'sonner'
@@ -51,6 +55,7 @@ export const TimesheetReviewDialog = ({
   const [timesheets, setTimesheets] = useState<EditableTimesheet[]>([])
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [popoverOpen, setPopoverOpen] = useState<Map<string, boolean>>(new Map())
 
   useEffect(() => {
     if (open) {
@@ -142,25 +147,64 @@ export const TimesheetReviewDialog = ({
     }
   }
 
+  const handleDateChange = (timesheetId: string, field: 'clockInDate' | 'clockOutDate', date: Date | undefined) => {
+    if (!date) return
+    const index = timesheets.findIndex((ts) => ts.id === timesheetId)
+    if (index === -1) return
+    const formattedDate = format(date, 'yyyy-MM-dd')
+    handleTimesheetChange(index, field, formattedDate)
+    setPopoverOpen((prev) => {
+      const newMap = new Map(prev)
+      newMap.set(`${timesheetId}-${field}`, false)
+      return newMap
+    })
+  }
+
   const columns: ColumnDef<EditableTimesheet>[] = [
     {
       id: 'clockIn',
       header: 'Clock In',
       cell: ({ row }) => {
         const index = timesheets.findIndex((ts) => ts.id === row.original.id)
+        const clockInDate = row.original.clockInDate ? new Date(row.original.clockInDate) : undefined
+        const popoverKey = `${row.original.id}-clockInDate`
+        const isOpen = popoverOpen.get(popoverKey) || false
+
         return (
           <div className="flex gap-2">
-            <Input
-              type="date"
-              value={row.original.clockInDate}
-              onChange={(e) => handleTimesheetChange(index, 'clockInDate', e.target.value)}
-              className="w-32"
-            />
+            <Popover open={isOpen} onOpenChange={(open) => {
+              setPopoverOpen((prev) => {
+                const newMap = new Map(prev)
+                newMap.set(popoverKey, open)
+                return newMap
+              })
+            }}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'w-1/2 justify-start text-left font-normal',
+                    !clockInDate && 'text-muted-foreground'
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {clockInDate ? format(clockInDate, 'MMM dd, yyyy') : 'Pick a date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={clockInDate}
+                  onSelect={(date) => handleDateChange(row.original.id, 'clockInDate', date)}
+                  defaultMonth={clockInDate}
+                />
+              </PopoverContent>
+            </Popover>
             <Input
               type="time"
               value={row.original.clockInTime}
               onChange={(e) => handleTimesheetChange(index, 'clockInTime', e.target.value)}
-              className="w-24"
+              className="w-1/2"
             />
           </div>
         )
@@ -172,19 +216,45 @@ export const TimesheetReviewDialog = ({
       header: 'Clock Out',
       cell: ({ row }) => {
         const index = timesheets.findIndex((ts) => ts.id === row.original.id)
+        const clockOutDate = row.original.clockOutDate ? new Date(row.original.clockOutDate) : undefined
+        const popoverKey = `${row.original.id}-clockOutDate`
+        const isOpen = popoverOpen.get(popoverKey) || false
+
         return (
           <div className="flex gap-2">
-            <Input
-              type="date"
-              value={row.original.clockOutDate}
-              onChange={(e) => handleTimesheetChange(index, 'clockOutDate', e.target.value)}
-              className="w-32"
-            />
+            <Popover open={isOpen} onOpenChange={(open) => {
+              setPopoverOpen((prev) => {
+                const newMap = new Map(prev)
+                newMap.set(popoverKey, open)
+                return newMap
+              })
+            }}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    'w-1/2 justify-start text-left font-normal',
+                    !clockOutDate && 'text-muted-foreground'
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {clockOutDate ? format(clockOutDate, 'MMM dd, yyyy') : 'Pick a date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={clockOutDate}
+                  onSelect={(date) => handleDateChange(row.original.id, 'clockOutDate', date)}
+                  defaultMonth={clockOutDate}
+                />
+              </PopoverContent>
+            </Popover>
             <Input
               type="time"
               value={row.original.clockOutTime}
               onChange={(e) => handleTimesheetChange(index, 'clockOutTime', e.target.value)}
-              className="w-24"
+              className="w-1/2"
             />
           </div>
         )
@@ -211,7 +281,7 @@ export const TimesheetReviewDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[50vw] min-w-[50vw] max-w-[90vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Review Timesheets - {employeeName}</DialogTitle>
           <DialogDescription>

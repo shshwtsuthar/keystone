@@ -118,98 +118,97 @@ export const StepTaxSuper = ({
     onDeductionsChange(employeeId, newDeductions)
   }
 
-  if (reviewedEmployees.size === 0) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        Please review timesheets in the previous step.
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Tax & Superannuation</h3>
-        <p className="text-sm text-muted-foreground mb-4">
+    <Card>
+      <CardHeader>
+        <CardTitle>Tax & Superannuation</CardTitle>
+        <CardDescription>
           Enter tax withheld and review superannuation for each employee
-        </p>
-      </div>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {reviewedEmployees.size === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            Please review timesheets in the previous step.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {Array.from(reviewedEmployees.values()).map((earning) => {
+              const deduction = deductions.get(earning.employeeId)
+              const grossPay = earning.total
+              const taxWithheld = deduction?.taxWithheld ?? 0
+              const superRate = employeeSuperRates.get(earning.employeeId) || defaultSuperRate || 0
+              const superannuation = deduction?.superannuation ?? (grossPay * superRate) / 100
+              const netPay = grossPay - taxWithheld
 
-      <div className="space-y-4">
-        {Array.from(reviewedEmployees.values()).map((earning) => {
-          const deduction = deductions.get(earning.employeeId)
-          const grossPay = earning.total
-          const taxWithheld = deduction?.taxWithheld ?? 0
-          const superRate = employeeSuperRates.get(earning.employeeId) || defaultSuperRate || 0
-          const superannuation = deduction?.superannuation ?? (grossPay * superRate) / 100
-          const netPay = grossPay - taxWithheld
+              return (
+                <Card key={earning.employeeId}>
+                  <CardHeader>
+                    <CardTitle className="text-base">{earning.employeeName}</CardTitle>
+                    <CardDescription>Gross Pay: ${grossPay.toFixed(2)}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor={`tax-${earning.employeeId}`}>
+                        PAYG Tax Withheld
+                      </Label>
+                      <Input
+                        id={`tax-${earning.employeeId}`}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={taxWithheld}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0
+                          handleTaxChange(earning.employeeId, value)
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Please check ATO tax tables and enter tax amount.
+                      </p>
+                    </div>
 
-          return (
-            <Card key={earning.employeeId}>
-              <CardHeader>
-                <CardTitle className="text-base">{earning.employeeName}</CardTitle>
-                <CardDescription>Gross Pay: ${grossPay.toFixed(2)}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`tax-${earning.employeeId}`}>
-                    PAYG Tax Withheld
-                  </Label>
-                  <Input
-                    id={`tax-${earning.employeeId}`}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={taxWithheld}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value) || 0
-                      handleTaxChange(earning.employeeId, value)
-                    }}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Please check ATO tax tables and enter tax amount.
-                  </p>
-                </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`super-rate-${earning.employeeId}`}>
+                        Superannuation Rate (%)
+                      </Label>
+                      <Input
+                        id={`super-rate-${earning.employeeId}`}
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={superRate}
+                        onChange={(e) => {
+                          const value = parseFloat(e.target.value) || 0
+                          handleSuperRateChange(earning.employeeId, value)
+                        }}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {defaultSuperRate !== null
+                          ? `Default: ${defaultSuperRate}% (editable for this payslip)`
+                          : 'No default super rate set. Please enter manually.'}
+                      </p>
+                    </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor={`super-rate-${earning.employeeId}`}>
-                    Superannuation Rate (%)
-                  </Label>
-                  <Input
-                    id={`super-rate-${earning.employeeId}`}
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    max="100"
-                    value={superRate}
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value) || 0
-                      handleSuperRateChange(earning.employeeId, value)
-                    }}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {defaultSuperRate !== null
-                      ? `Default: ${defaultSuperRate}% (editable for this payslip)`
-                      : 'No default super rate set. Please enter manually.'}
-                  </p>
-                </div>
-
-                <div className="pt-2 border-t space-y-2">
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-muted-foreground">Superannuation Amount:</span>
-                    <span className="font-medium">${superannuation.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Net Pay:</span>
-                    <span className="text-lg font-semibold">${netPay.toFixed(2)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-    </div>
+                    <div className="pt-2 border-t space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">Superannuation Amount:</span>
+                        <span className="font-medium">${superannuation.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Net Pay:</span>
+                        <span className="text-lg font-semibold">${netPay.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
