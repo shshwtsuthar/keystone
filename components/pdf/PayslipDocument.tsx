@@ -47,7 +47,7 @@ export const PayslipDocument = ({ data }: { data: PayslipData }) => (
       {/* COMPANY LOGO */}
       {data.companyLogoUrl && (
         <View style={styles.logoContainer}>
-          <Image src={data.companyLogoUrl} style={styles.logo} alt="Company logo" />
+          <Image src={data.companyLogoUrl} style={styles.logo} />
         </View>
       )}
 
