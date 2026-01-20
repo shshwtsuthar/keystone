@@ -2,9 +2,10 @@
 
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
-import { type ThemeProviderProps } from "next-themes/dist/types"
 
 export type Theme = "light" | "blue" | "yellow" | "orange" | "red" | "green" | "violet"
+
+type ThemeProviderProps = React.ComponentProps<typeof NextThemesProvider>
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (

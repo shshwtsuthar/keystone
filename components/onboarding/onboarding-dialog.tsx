@@ -76,9 +76,7 @@ const timezoneSchema = z.object({
 })
 
 const themeSchema = z.object({
-  theme: z.enum(['light', 'blue', 'yellow', 'orange', 'red', 'green', 'violet'], {
-    required_error: 'Theme is required',
-  }),
+  theme: z.enum(['light', 'blue', 'yellow', 'orange', 'red', 'green', 'violet']),
 })
 
 type MasterPinFormValues = z.infer<typeof masterPinSchema>
