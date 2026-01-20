@@ -189,7 +189,7 @@ export function EmployeeForm({ employee, locations, onSuccess }: EmployeeFormPro
                   value={field.value || "__none__"}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a location" />
                     </SelectTrigger>
                   </FormControl>

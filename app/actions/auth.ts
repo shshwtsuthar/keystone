@@ -21,6 +21,14 @@ export const signIn = async (email: string, password: string) => {
 export const signUp = async (email: string, password: string, fullName: string, organizationName: string) => {
   const supabase = await createClient()
 
+  // Get site URL - use localhost only in development
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null)
+  
+  if (!siteUrl) {
+    return { error: 'NEXT_PUBLIC_SITE_URL environment variable is not set' }
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -29,7 +37,7 @@ export const signUp = async (email: string, password: string, fullName: string, 
         full_name: fullName,
         organization_name: organizationName,
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/dashboard`,
+      emailRedirectTo: `${siteUrl}/dashboard`,
     },
   })
 
