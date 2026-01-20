@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTheme } from '@/hooks/use-theme'
+import { type Theme } from '@/components/providers/theme-provider'
 import { cn } from '@/lib/utils'
 import {
   saveOnboardingMasterPin,
@@ -75,7 +76,7 @@ const timezoneSchema = z.object({
 })
 
 const themeSchema = z.object({
-  theme: z.enum(['light', 'blue-light'], {
+  theme: z.enum(['light', 'blue', 'yellow', 'orange', 'red', 'green', 'violet'], {
     required_error: 'Theme is required',
   }),
 })
@@ -125,7 +126,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
   const themeForm = useForm<ThemeFormValues>({
     resolver: zodResolver(themeSchema),
     defaultValues: {
-      theme: (theme as 'light' | 'blue-light') || 'light',
+      theme: (theme as Theme) || 'light',
     },
   })
 
@@ -563,7 +564,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
                         onValueChange={(value) => {
                           field.onChange(value)
                           // Immediately apply the theme when selected
-                          setTheme(value as 'light' | 'blue-light')
+                          setTheme(value as Theme)
                         }}
                       >
                         <FormControl>
@@ -573,7 +574,12 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="light">Light</SelectItem>
-                          <SelectItem value="blue-light">Blue Light</SelectItem>
+                          <SelectItem value="blue">Blue</SelectItem>
+                          <SelectItem value="yellow">Yellow</SelectItem>
+                          <SelectItem value="orange">Orange</SelectItem>
+                          <SelectItem value="red">Red</SelectItem>
+                          <SelectItem value="green">Green</SelectItem>
+                          <SelectItem value="violet">Violet</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

@@ -16,6 +16,7 @@ import {
   DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu"
 import { useTheme } from "@/hooks/use-theme"
+import { type Theme } from "@/components/providers/theme-provider"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -49,7 +50,7 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
     router.push("/dashboard/settings")
   }
 
-  const handleThemeChange = (newTheme: "light" | "blue-light") => {
+  const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme)
   }
 
@@ -135,16 +136,81 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => handleThemeChange("blue-light")}
+                  onClick={() => handleThemeChange("blue")}
                   className="gap-2 p-2"
                 >
                   <div className="flex items-center gap-2">
-                    {theme === "blue-light" ? (
+                    {theme === "blue" ? (
                       <Check className="size-4" />
                     ) : (
                       <div className="size-4" />
                     )}
-                    <span>Blue Light</span>
+                    <span>Blue</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleThemeChange("yellow")}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === "yellow" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <div className="size-4" />
+                    )}
+                    <span>Yellow</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleThemeChange("orange")}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === "orange" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <div className="size-4" />
+                    )}
+                    <span>Orange</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleThemeChange("red")}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === "red" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <div className="size-4" />
+                    )}
+                    <span>Red</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleThemeChange("green")}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === "green" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <div className="size-4" />
+                    )}
+                    <span>Green</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleThemeChange("violet")}
+                  className="gap-2 p-2"
+                >
+                  <div className="flex items-center gap-2">
+                    {theme === "violet" ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <div className="size-4" />
+                    )}
+                    <span>Violet</span>
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuSubContent>

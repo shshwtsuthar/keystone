@@ -6,7 +6,15 @@ import * as RechartsPrimitive from "recharts"
 import { cn } from "@/lib/utils"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = { light: "", "blue-light": ".blue-light" } as const
+const THEMES = { 
+  light: "", 
+  "blue": ".blue",
+  "yellow": ".yellow",
+  "orange": ".orange",
+  "red": ".red",
+  "green": ".green",
+  "violet": ".violet"
+} as const
 
 export type ChartConfig = {
   [k in string]: {
