@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ChevronsUpDown, LogOut, Bell, Settings, Palette, Check } from "lucide-react"
+import { ChevronsUpDown, LogOut, Settings, Palette, Check } from "lucide-react"
 
 import {
   DropdownMenu,
@@ -39,11 +39,6 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
 
   const handleSignOut = async () => {
     await signOut()
-  }
-
-  const handleNotifications = () => {
-    // TODO: Navigate to notifications page or open notifications panel
-    console.log("Notifications clicked")
   }
 
   const handleSettings = () => {
@@ -104,13 +99,6 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
             <DropdownMenuLabel className="text-muted-foreground text-xs">
               Account
             </DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={handleNotifications}
-              className="gap-2 p-2"
-            >
-              <Bell className="size-4" />
-              <span>Notifications</span>
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSettings} className="gap-2 p-2">
               <Settings className="size-4" />
               <span>Settings</span>
