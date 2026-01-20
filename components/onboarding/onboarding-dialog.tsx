@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, startTransition } from 'react'
+import { useState, useCallback, startTransition, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -128,6 +128,14 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
       theme: (theme as Theme) || 'light',
     },
   })
+
+  // Sync theme form value with current theme when navigating to step 5
+  useEffect(() => {
+    if (currentStep === 5) {
+      const currentTheme = (theme as Theme) || 'light'
+      themeForm.setValue('theme', currentTheme)
+    }
+  }, [currentStep, theme, themeForm])
 
   // Format ABN for display (XX XXX XXX XXX)
   const formatAbn = (value: string) => {
