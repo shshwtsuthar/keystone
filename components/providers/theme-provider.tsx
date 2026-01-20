@@ -4,7 +4,7 @@ import * as React from "react"
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { type ThemeProviderProps } from "next-themes/dist/types"
 
-export type Theme = "light" | "dark" | "blue-light"
+export type Theme = "light" | "blue-light"
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return (
@@ -12,7 +12,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
       attribute="class"
       defaultTheme="light"
       enableSystem={false}
-      themes={["light", "dark", "blue-light"]}
+      themes={["light", "blue-light"]}
       {...props}
     >
       {children}

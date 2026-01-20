@@ -16,9 +16,11 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { LayoutDashboard, Users, MapPin, DollarSign } from 'lucide-react'
+import { LayoutDashboard, Users, MapPin, DollarSign, Bug } from 'lucide-react'
 import Link from 'next/link'
 import { UserSwitcher } from '@/components/dashboard/user-switcher'
+import { OnboardingWrapper } from '@/components/onboarding/onboarding-wrapper'
+import { DebugOnboardingButton } from '@/components/onboarding/debug-onboarding-button'
 
 export default async function DashboardLayout({
   children,
@@ -37,8 +39,15 @@ export default async function DashboardLayout({
   const companyLogoUrl = 
     (profile.organizations as { company_logo_url?: string | null })?.company_logo_url || null
 
+  // Check if onboarding is needed (master_pin_hash is null)
+  const needsOnboarding = !profile.master_pin_hash
+
   return (
     <SidebarProvider>
+      <OnboardingWrapper
+        userRole={profile.role}
+        initialNeedsOnboarding={needsOnboarding}
+      />
       <Sidebar>
         <SidebarHeader className="h-16 flex flex-row items-center justify-start relative border-b">
           <div className="flex items-center gap-2 px-2">
@@ -96,6 +105,16 @@ export default async function DashboardLayout({
                       <span>Payroll</span>
                     </Link>
                   </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+          <SidebarSeparator />
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <DebugOnboardingButton />
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>

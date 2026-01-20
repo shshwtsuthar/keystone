@@ -49,7 +49,7 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
     router.push("/dashboard/settings")
   }
 
-  const handleThemeChange = (newTheme: "light" | "dark" | "blue-light") => {
+  const handleThemeChange = (newTheme: "light" | "blue-light") => {
     setTheme(newTheme)
   }
 
@@ -132,19 +132,6 @@ export const UserSwitcher = ({ user }: UserSwitcherProps) => {
                       <div className="size-4" />
                     )}
                     <span>Light</span>
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleThemeChange("dark")}
-                  className="gap-2 p-2"
-                >
-                  <div className="flex items-center gap-2">
-                    {theme === "dark" ? (
-                      <Check className="size-4" />
-                    ) : (
-                      <div className="size-4" />
-                    )}
-                    <span>Dark</span>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuItem

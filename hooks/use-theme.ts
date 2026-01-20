@@ -11,11 +11,9 @@ export const useTheme = () => {
     setNextTheme(newTheme)
     // Ensure the theme class is applied immediately
     const html = document.documentElement
-    html.classList.remove("light", "dark", "blue-light")
+    html.classList.remove("light", "blue-light")
     if (newTheme === "blue-light") {
       html.classList.add("blue-light")
-    } else if (newTheme === "dark") {
-      html.classList.add("dark")
     } else {
       html.classList.add("light")
     }
