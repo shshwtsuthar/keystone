@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { format } from 'date-fns'
+import { format, startOfMonth, endOfMonth } from 'date-fns'
 import type { EmployeeTimesheet } from '@/lib/payroll-utils'
 import type { PayslipData } from '@/types/payslip'
 
@@ -398,6 +398,94 @@ export const getPayslipData = async (
     return { data: payslipData }
   } catch (error) {
     return { error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
+export interface PayrollMetrics {
+  totalPayRuns: number
+  payRunsThisMonth: number
+  totalAmountPaid: number
+  employeesPaidThisMonth: number
+}
+
+export const getPayrollMetrics = async (): Promise<PayrollMetrics> => {
+  const supabase = await createClient()
+  
+  try {
+    const organizationId = await getOrganizationId()
+
+    const currentMonthStart = startOfMonth(new Date())
+    const currentMonthEnd = endOfMonth(new Date())
+
+    // Get total pay runs count
+    const { count: totalPayRuns } = await supabase
+      .from('pay_runs')
+      .select('*', { count: 'exact', head: true })
+      .eq('organization_id', organizationId)
+
+    // Get pay runs this month count
+    const { count: payRunsThisMonth } = await supabase
+      .from('pay_runs')
+      .select('*', { count: 'exact', head: true })
+      .eq('organization_id', organizationId)
+      .gte('created_at', currentMonthStart.toISOString())
+      .lte('created_at', currentMonthEnd.toISOString())
+
+    // Get all pay runs for this organization to calculate total amount paid
+    const { data: allPayRuns } = await supabase
+      .from('pay_runs')
+      .select('id')
+      .eq('organization_id', organizationId)
+
+    let totalAmountPaid = 0
+    if (allPayRuns && allPayRuns.length > 0) {
+      const payRunIds = allPayRuns.map(pr => pr.id)
+      const { data: allEarnings, error: earningsError } = await supabase
+        .from('pay_run_earnings')
+        .select('total')
+        .in('pay_run_id', payRunIds)
+
+      if (!earningsError && allEarnings) {
+        totalAmountPaid = allEarnings.reduce((sum, earning) => sum + Number(earning.total || 0), 0)
+      }
+    }
+
+    // Get employees paid this month
+    const { data: payRunsThisMonthData } = await supabase
+      .from('pay_runs')
+      .select('id')
+      .eq('organization_id', organizationId)
+      .gte('created_at', currentMonthStart.toISOString())
+      .lte('created_at', currentMonthEnd.toISOString())
+
+    const payRunIdsThisMonth = payRunsThisMonthData?.map(pr => pr.id) || []
+
+    let employeesPaidThisMonth = 0
+    if (payRunIdsThisMonth.length > 0) {
+      const { data: earningsThisMonth } = await supabase
+        .from('pay_run_earnings')
+        .select('employee_id')
+        .in('pay_run_id', payRunIdsThisMonth)
+
+      if (earningsThisMonth) {
+        const uniqueEmployees = new Set(earningsThisMonth.map(e => e.employee_id))
+        employeesPaidThisMonth = uniqueEmployees.size
+      }
+    }
+
+    return {
+      totalPayRuns: totalPayRuns || 0,
+      payRunsThisMonth: payRunsThisMonth || 0,
+      totalAmountPaid,
+      employeesPaidThisMonth,
+    }
+  } catch (error) {
+    return {
+      totalPayRuns: 0,
+      payRunsThisMonth: 0,
+      totalAmountPaid: 0,
+      employeesPaidThisMonth: 0,
+    }
   }
 }
 

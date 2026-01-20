@@ -1,10 +1,12 @@
-import { getPayRuns } from '@/app/actions/payroll'
+import { getPayRuns, getPayrollMetrics } from '@/app/actions/payroll'
 import { PayRunsTable } from './components/pay-runs-table'
 import { NewPayRunWizard } from './components/new-pay-run-wizard'
+import { PayrollMetricsCard } from '@/components/dashboard/payroll-metrics-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default async function PayrollPage() {
   const { payRuns } = await getPayRuns()
+  const payrollMetrics = await getPayrollMetrics()
 
   return (
     <div className="space-y-6">
@@ -17,6 +19,9 @@ export default async function PayrollPage() {
         </div>
         <NewPayRunWizard />
       </div>
+
+      {/* Key Metrics - Top Section */}
+      <PayrollMetricsCard metrics={payrollMetrics} />
 
       <Card>
         <CardHeader>

@@ -1,7 +1,8 @@
-import { getEmployees } from '@/app/actions/employees'
+import { getEmployees, getEmployeesMetrics } from '@/app/actions/employees'
 import { getLocations } from '@/app/actions/locations'
 import { EmployeeForm } from './employee-form'
 import { EmployeeTable } from './employee-table'
+import { EmployeesMetricsCard } from '@/components/dashboard/employees-metrics-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -17,6 +18,7 @@ import {
 export default async function EmployeesPage() {
   const { employees } = await getEmployees()
   const { locations } = await getLocations()
+  const employeesMetrics = await getEmployeesMetrics()
 
   return (
     <div className="space-y-6">
@@ -45,6 +47,9 @@ export default async function EmployeesPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Key Metrics - Top Section */}
+      <EmployeesMetricsCard metrics={employeesMetrics} />
 
       <Card>
         <CardHeader>

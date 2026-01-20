@@ -1,6 +1,7 @@
-import { getLocations } from '@/app/actions/locations'
+import { getLocations, getLocationsMetrics } from '@/app/actions/locations'
 import { LocationForm } from './location-form'
 import { LocationTable } from './location-table'
+import { LocationsMetricsCard } from '@/components/dashboard/locations-metrics-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
@@ -15,6 +16,7 @@ import {
 
 export default async function LocationsPage() {
   const { locations } = await getLocations()
+  const locationsMetrics = await getLocationsMetrics()
 
   return (
     <div className="space-y-6">
@@ -43,6 +45,9 @@ export default async function LocationsPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Key Metrics - Top Section */}
+      <LocationsMetricsCard metrics={locationsMetrics} />
 
       <Card>
         <CardHeader>
