@@ -12,15 +12,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // If user was on kiosk and tries to navigate elsewhere (except dashboard after exit)
+  // If user was on kiosk and tries to navigate elsewhere
   if (refererUrl && refererUrl.pathname.startsWith('/kiosk/')) {
-    // Only allow navigation to dashboard (after master PIN verification)
-    // All other routes should redirect back to kiosk
-    if (pathname.startsWith('/dashboard')) {
-      return NextResponse.next()
-    }
-    
-    // Redirect back to the kiosk they were on
+    // Redirect back to the kiosk they were on (including dashboard)
     return NextResponse.redirect(refererUrl)
   }
 
