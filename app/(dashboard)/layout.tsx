@@ -38,8 +38,8 @@ export default async function DashboardLayout({
   const companyLogoUrl = 
     (profile.organizations as { company_logo_url?: string | null })?.company_logo_url || null
 
-  // Check if onboarding is needed (master_pin_hash is null)
-  const needsOnboarding = !profile.master_pin_hash
+  // Check if onboarding is needed (is_onboarded is false)
+  const needsOnboarding = !profile.is_onboarded
 
   return (
     <SidebarProvider>

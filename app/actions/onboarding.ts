@@ -15,7 +15,7 @@ export const checkOnboardingNeeded = async () => {
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('master_pin_hash')
+    .select('is_onboarded')
     .eq('id', user.id)
     .single()
 
@@ -23,8 +23,8 @@ export const checkOnboardingNeeded = async () => {
     return { needsOnboarding: false, error: 'Profile not found' }
   }
 
-  // Onboarding is needed if master_pin_hash is not set
-  return { needsOnboarding: !profile.master_pin_hash }
+  // Onboarding is needed if is_onboarded is false
+  return { needsOnboarding: !profile.is_onboarded }
 }
 
 export const saveOnboardingMasterPin = async (masterPin: string) => {
@@ -79,6 +79,28 @@ export const saveOnboardingTheme = async (theme: string) => {
       },
     },
   })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
+export const completeOnboarding = async () => {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  // Mark onboarding as complete
+  const { error } = await supabase
+    .from('profiles')
+    .update({ is_onboarded: true })
+    .eq('id', user.id)
 
   if (error) {
     return { error: error.message }

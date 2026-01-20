@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, startTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -48,6 +48,7 @@ import {
   saveOnboardingCompanyDetails,
   saveOnboardingTimezone,
   saveOnboardingTheme,
+  completeOnboarding,
 } from '@/app/actions/onboarding'
 
 const masterPinSchema = z.object({
@@ -301,12 +302,31 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
     }
   }
 
-  const handleComplete = () => {
-    if (onClose) {
-      onClose()
+  const handleComplete = async () => {
+    setIsLoading(true)
+    try {
+      // Mark onboarding as complete in the database
+      const result = await completeOnboarding()
+      if (result.error) {
+        toast.error(result.error)
+        setIsLoading(false)
+        return
+      }
+      
+      // Close the dialog first
+      if (onClose) {
+        onClose()
+      }
+      
+      // Use startTransition to refresh without interrupting the response stream
+      // This prevents the "Error in input stream {}" error
+      startTransition(() => {
+        router.refresh()
+      })
+    } catch (error) {
+      toast.error('An unexpected error occurred')
+      setIsLoading(false)
     }
-    // Force a full page reload to ensure server components re-fetch data
-    window.location.reload()
   }
 
   const renderStepContent = () => {
@@ -323,7 +343,7 @@ export const OnboardingDialog = ({ open, userRole, onClose }: OnboardingDialogPr
             </div>
             <div className="text-center">
               <p className="text-base text-muted-foreground leading-relaxed">
-                Hi business owner, welcome to Keystone! I'm Shashwat, and I'll take you through the initial setup so that your business can reach new heights!
+                Hi business owner, welcome to <span className="text-foreground">Keystone</span>! I'm Shashwat, and I'll take you through the initial setup so that your business can reach new heights!
               </p>
             </div>
           </div>

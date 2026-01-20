@@ -316,6 +316,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          is_onboarded: boolean
           master_pin_hash: string | null
           organization_id: string
           role: Database["public"]["Enums"]["user_role"]
@@ -325,6 +326,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id: string
+          is_onboarded?: boolean
           master_pin_hash?: string | null
           organization_id: string
           role?: Database["public"]["Enums"]["user_role"]
@@ -334,6 +336,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          is_onboarded?: boolean
           master_pin_hash?: string | null
           organization_id?: string
           role?: Database["public"]["Enums"]["user_role"]

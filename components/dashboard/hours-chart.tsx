@@ -68,7 +68,7 @@ export const HoursChart = ({ dailyData, weeklyData, monthlyData }: HoursChartPro
     <Card className="flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 shrink-0">
         <div className="flex flex-col gap-2">
-          <CardTitle className="text-sm font-medium">Hours Worked</CardTitle>
+          <CardTitle className="text-base font-medium">Hours Worked</CardTitle>
           <CardDescription>Track hours worked over time</CardDescription>
         </div>
         <ButtonGroup>
