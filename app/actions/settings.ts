@@ -53,6 +53,19 @@ export const updateOrganization = async (formData: FormData) => {
     return { error: 'ABN must be 11 digits' }
   }
 
+  // Get current organization data (fetch once, reuse throughout)
+  const { data: currentOrg } = await supabase
+    .from('organizations')
+    .select('name, company_logo_url')
+    .eq('id', profile.organization_id)
+    .single()
+
+  // If the passed name is "My Organization" (hardcoded default), preserve the existing name
+  // This prevents the onboarding dialog from overwriting the signup organization name
+  const finalName = name === 'My Organization' && currentOrg?.name
+    ? currentOrg.name
+    : name
+
   let logoUrl: string | null = null
 
   // Handle logo upload
@@ -67,13 +80,6 @@ export const updateOrganization = async (formData: FormData) => {
     if (companyLogo.size > maxSize) {
       return { error: 'Logo file size must be less than 5MB' }
     }
-
-    // Get current organization to check for existing logo
-    const { data: currentOrg } = await supabase
-      .from('organizations')
-      .select('company_logo_url')
-      .eq('id', profile.organization_id)
-      .single()
 
     // Delete old logo if it exists
     if (currentOrg?.company_logo_url) {
@@ -109,12 +115,6 @@ export const updateOrganization = async (formData: FormData) => {
     logoUrl = urlData.publicUrl
   } else if (removeLogo) {
     // Remove logo if requested
-    const { data: currentOrg } = await supabase
-      .from('organizations')
-      .select('company_logo_url')
-      .eq('id', profile.organization_id)
-      .single()
-
     if (currentOrg?.company_logo_url) {
       const oldLogoPath = currentOrg.company_logo_url.split('/').pop()
       if (oldLogoPath) {
@@ -126,11 +126,6 @@ export const updateOrganization = async (formData: FormData) => {
     logoUrl = null
   } else {
     // Keep existing logo if not updating
-    const { data: currentOrg } = await supabase
-      .from('organizations')
-      .select('company_logo_url')
-      .eq('id', profile.organization_id)
-      .single()
     logoUrl = currentOrg?.company_logo_url || null
   }
 
@@ -152,7 +147,7 @@ export const updateOrganization = async (formData: FormData) => {
     superannuation_default_rate?: number | null
     company_logo_url?: string | null
   } = {
-    name,
+    name: finalName,
   }
 
   if (employerBusinessName !== undefined) {
