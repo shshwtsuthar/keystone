@@ -26,8 +26,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { EmployeeForm } from './employee-form'
-import { deleteEmployee } from '@/app/actions/employees'
-import { Pencil, Trash2 } from 'lucide-react'
+import { deleteEmployee, resetEmployeePin } from '@/app/actions/employees'
+import { Pencil, Trash2, KeyRound } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
@@ -59,6 +59,8 @@ interface EmployeeTableProps {
 export function EmployeeTable({ employees, locations }: EmployeeTableProps) {
   const router = useRouter()
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
+  const [showResetPinDialog, setShowResetPinDialog] = useState(false)
+  const [newPin, setNewPin] = useState<string | null>(null)
 
   const handleDelete = async (id: string) => {
     const result = await deleteEmployee(id)
@@ -68,6 +70,22 @@ export function EmployeeTable({ employees, locations }: EmployeeTableProps) {
       toast.success('Employee deleted successfully')
       router.refresh()
     }
+  }
+
+  const handleResetPin = async (employeeId: string) => {
+    const result = await resetEmployeePin(employeeId)
+    if (result.error) {
+      toast.error(result.error)
+      return
+    }
+    setNewPin(result.pin ?? null)
+    setShowResetPinDialog(true)
+    router.refresh()
+  }
+
+  const handleCloseResetPinDialog = () => {
+    setShowResetPinDialog(false)
+    setNewPin(null)
   }
 
   const columns: ColumnDef<Employee>[] = [
@@ -149,6 +167,35 @@ export function EmployeeTable({ employees, locations }: EmployeeTableProps) {
             </Dialog>
             <AlertDialog>
               <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  aria-label={`Reset PIN for ${employee.full_name}`}
+                >
+                  <KeyRound className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset PIN?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Reset the PIN for {employee.full_name}? They will need to
+                    use the new PIN at the kiosk. The previous PIN will stop
+                    working immediately.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleResetPin(employee.id)}
+                  >
+                    Reset PIN
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -188,14 +235,46 @@ export function EmployeeTable({ employees, locations }: EmployeeTableProps) {
   }
 
   return (
-    <DataTable
-      columns={columns}
-      data={employees}
-      searchKey="full_name"
-      searchPlaceholder="Search employees..."
-      enableSearch={true}
-      enablePagination={true}
-      enableColumnVisibility={true}
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={employees}
+        searchKey="full_name"
+        searchPlaceholder="Search employees..."
+        enableSearch={true}
+        enablePagination={true}
+        enableColumnVisibility={true}
+      />
+      <Dialog
+        open={showResetPinDialog}
+        onOpenChange={(open) => {
+          if (!open) handleCloseResetPinDialog()
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Employee PIN Reset</DialogTitle>
+            <DialogDescription>
+              Share this PIN with the employee. It will not be shown again.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">PIN:</p>
+              <p className="text-4xl font-bold tracking-wider font-mono">
+                {newPin ?? '—'}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={handleCloseResetPinDialog}
+            className="w-full"
+            aria-label="Close and acknowledge PIN has been saved"
+          >
+            I&apos;ve Saved This PIN
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

@@ -100,6 +100,52 @@ export const updateEmployee = async (
   return { success: true }
 }
 
+export const resetEmployeePin = async (employeeId: string) => {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Not authenticated' }
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('organization_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile) {
+    return { error: 'Profile not found' }
+  }
+
+  const { data: employee, error: employeeError } = await supabase
+    .from('employees')
+    .select('id, full_name')
+    .eq('id', employeeId)
+    .eq('organization_id', profile.organization_id)
+    .single()
+
+  if (employeeError || !employee) {
+    return { error: 'Employee not found' }
+  }
+
+  const pin = generatePin()
+  const pinHash = await bcrypt.hash(pin, 10)
+
+  const { error: updateError } = await supabase
+    .from('employees')
+    .update({ pin_hash: pinHash })
+    .eq('id', employeeId)
+    .eq('organization_id', profile.organization_id)
+
+  if (updateError) {
+    return { error: updateError.message }
+  }
+
+  revalidatePath('/dashboard/employees')
+  return { success: true, pin }
+}
+
 export const deleteEmployee = async (id: string) => {
   const supabase = await createClient()
 
